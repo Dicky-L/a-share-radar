@@ -76,6 +76,8 @@ jobs:
           ref: main
       - name: Build daily report archive before publishing
         run: python3 scripts/build_report_index.py
+      - name: Build verified market visual summaries
+        run: python3 scripts/build_chart_data.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
