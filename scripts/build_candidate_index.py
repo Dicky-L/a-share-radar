@@ -1,0 +1,135 @@
+"""Extract the stock-selection journal from ACTUAL dated report tables.
+
+This is NOT an automatic stock screener or trade execution tool.
+Missing triggers, invalidation and exits stay absent; never invent trading positions.
+"""
+from __future__ import annotations
+import json
+import re
+from datetime import date
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+REPORTS = ROOT / "reports"
+DEST = REPORTS / "candidates.json"
+DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}\.md$")
+TICKER_RE = re.compile(r"(?<!\d)(?:60|00|30)\d{4}(?!\d)")
+
+def cells(line: str):
+    return [v.strip() for v in line.strip().strip("|").split("|")]
+
+def plain(text: str):
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    return re.sub(r"[*_\x60]", "", text).strip()
+
+def col(headers, values, patterns):
+    for i, name in enumerate(headers):
+        if any(key in name for key in patterns):
+            return plain(values[i]) if i < len(values) else ""
+    return ""
+
+def extract(text: str, day: str, status: str):
+    date.fromisoformat(day)
+    section = ""
+    result = []
+    seen = set()
+    lines = text.replace("\r", "").splitlines()
+    for i, line in enumerate(lines):
+        head = re.match(r"^#{2,3}\s+(.+)$", line.strip())
+        if head:
+            section = plain(head.group(1))
+        if not line.strip().startswith("|") or i+2 >= len(lines):
+            continue
+        headers = [plain(x) for x in cells(line)]
+        if not any("代码" in x for x in headers) or not any(
+            ("股票" in x or "标的" in x or "名称" in x or "公司" in x) for x in headers
+        ):
+            continue
+        if not re.fullmatch(r"[|:\-\s]+", lines[i+1].strip()):
+            continue
+        role = (
+            "historical_review" if any(x in section for x in ("验证", "复盘", "历史", "回测", "持仓"))
+            else "watchlist"
+        )
+        j = i+2
+        while j < len(lines) and lines[j].strip().startswith("|"):
+            vals = cells(lines[j])
+            found = TICKER_RE.search(col(headers, vals, ("代码",)))
+            if not found:
+                j += 1
+                continue
+            ticker = found.group(0)
+            name = col(headers, vals, ("股票", "标的", "名称", "公司"))
+            if not name:
+                j += 1
+                continue
+            pool_raw = col(headers, vals, ("池别", "池", "类别", "等级"))
+            pool_match = re.search(r"(?<![a-zA-Z])([ABC])\s*(?:池|级|候选)?(?![a-zA-Z])", pool_raw, re.I)
+            pool = pool_match.group(1).upper() if pool_match else None
+            original_reason = col(headers, vals, ("观察逻辑", "观察思路", "理由", "分析", "逻辑", "依据"))
+            trigger = col(headers, vals, ("入场条件", "买入条件", "买入触发", "验证条件", "触发条件"))
+            avoid = col(headers, vals, ("不追高", "禁止追高", "追高限制"))
+            invalidation = col(headers, vals, ("失效", "止损"))
+            exit_plan = col(headers, vals, ("卖出", "止盈", "退出"))
+            risk = col(headers, vals, ("风险", "拥挤"))
+            row = (day, ticker, role)
+            if row not in seen:
+                seen.add(row)
+                result.append({
+                    "date":day, "code":ticker, "name":name, "pool":pool,
+                    "role":role, "section":section,
+                    "reason":original_reason or None,
+                    "entry_trigger":trigger or None,
+                    "no_chase":avoid or None,
+                    "invalidation":invalidation or None,
+                    "exit_plan":exit_plan or None,
+                    "risk":risk or None,
+                    "report_status":status,
+                    "source_file":"./reports/"+day+".md",
+                })
+            j += 1
+    return result
+
+def build(folder=REPORTS):
+    entries = []
+    for path in sorted(folder.glob("????-??-??.md")):
+        if not DATE_RE.fullmatch(path.name):
+            raise ValueError("Invalid report name: "+path.name)
+        text = path.read_text(encoding="utf-8")
+        if not text.startswith("---\n"):
+            raise ValueError("Missing metadata: "+path.name)
+        parts = text.split("---\n",2)
+        if len(parts) != 3:
+            raise ValueError("Malformed metadata: "+path.name)
+        fields = {}
+        for line in parts[1].splitlines():
+            if ":" in line:
+                k,v = line.split(":",1)
+                fields[k.strip()] = v.strip()
+        if fields.get("date") != path.stem:
+            raise ValueError("Report/date mismatch: "+path.name)
+        status = fields.get("status")
+        if status not in {"original","summary"}:
+            raise ValueError("Invalid report provenance: "+path.name)
+        entries += extract(parts[2],path.stem,status)
+    history = {}
+    for row in entries:
+        key = row["code"]
+        history.setdefault(key,{"code":key,"name":row["name"],"observations":[]})
+        history[key]["observations"].append({
+            "date":row["date"],"pool":row["pool"],"role":row["role"],"report_status":row["report_status"]
+        })
+    return {
+        "schema_version":1,
+        "extraction":"Only explicit dated Markdown stock tables; no inference of buys, sells, success or omissions.",
+        "records":entries,
+        "stocks":list(history.values()),
+    }
+
+def main():
+    d = build()
+    DEST.write_text(json.dumps(d,ensure_ascii=False,indent=2,allow_nan=False)+"\n",encoding="utf-8")
+    print("Extracted %d dated stock records across %d tickers" % (len(d["records"]),len(d["stocks"])))
+
+if __name__=="__main__":
+    main()
