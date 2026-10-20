@@ -38,6 +38,23 @@ def extract(text: str, day: str, status: str):
         head = re.match(r"^#{2,3}\s+(.+)$", line.strip())
         if head:
             section = plain(head.group(1))
+        # One narrow form is supported for older summaries where an explicit B-pool
+        # roster was written in prose. Do NOT infer a pool from general discussion.
+        if section in {"候选池", "观察候选"} and not line.strip().startswith("|"):
+            named_pool = re.search(r"([ABC])池观察股", line, re.I)
+            if named_pool:
+                for raw_name, ticker in re.findall(r"([\u4e00-\u9fff]{2,12})（((?:60|00|30)\d{4})）", line):
+                    name = raw_name.removeprefix("保留")
+                    if not name or (day,ticker,"watchlist") in seen:
+                        continue
+                    seen.add((day,ticker,"watchlist"))
+                    result.append({
+                        "date":day,"code":ticker,"name":name,"pool":named_pool.group(1).upper(),
+                        "role":"watchlist","section":section,"reason":None,
+                        "entry_trigger":None,"no_chase":None,"invalidation":None,
+                        "exit_plan":None,"risk":None,"report_status":status,
+                        "source_file":"./reports/"+day+".md",
+                    })
         if not line.strip().startswith("|") or i+2 >= len(lines):
             continue
         headers = [plain(x) for x in cells(line)]
