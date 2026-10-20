@@ -31,6 +31,8 @@ jobs:
         run: node --check assets/reading.js && node --check assets/charts.js
       - name: Build searchable archive index
         run: python3 scripts/build_report_index.py
+      - name: Test market chart data validation
+        run: python3 -m unittest discover -s tests -p 'test_chart_data.py' -v
       - name: Build verified market visual summaries
         run: python3 scripts/build_chart_data.py
       - uses: actions/configure-pages@v5
