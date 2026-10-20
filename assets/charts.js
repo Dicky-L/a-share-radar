@@ -274,8 +274,8 @@ function setup(){
  if(!reader||!content)return;
  root=mk("section","radar-viz");
  const head=mk("div","viz-head");
- const group=mk("div");group.append(mk("div","viz-eyebrow","VISUAL EVIDENCE · 图表辅助"),mk("h3","","数据图解（保留完整专业报告）"),
-  mk("p","viz-sub","图表为来源可追踪的辅助视图，不改变正文分析或候选条件。"));
+ const group=mk("div");group.append(mk("div","viz-eyebrow","VISUAL EVIDENCE · 图表辅助"),mk("h3","","市场环境与资金数据 · 辅助验证"),
+  mk("p","viz-sub","选股观察和买卖条件在上方优先展示；此处只用于核对市场数据，不更改原报告。"));
  head.append(group);
  const nav=mk("div","viz-segment");buttons={};
  for(const [key,label] of [["report","本期报告"],["date","对应日期行情"],["latest","最新行情（独立查看）"]]){
@@ -283,7 +283,10 @@ function setup(){
  }
  head.append(nav);root.append(head);
  body=mk("div","viz-body");root.append(body);
- reader.insertBefore(root,content);
+ const fold=mk("details","market-fold");
+ const summary=mk("summary","","市场与资金图表 · 辅助验证（点击展开）");
+ fold.append(summary,root);
+ reader.insertBefore(fold,content);
  if(window.RadarCurrentReport)render(window.RadarCurrentReport);
 }
 window.RadarCharts={render};
