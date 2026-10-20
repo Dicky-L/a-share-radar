@@ -2,7 +2,13 @@ name: Deploy radar to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ['index.html', 'data/**', '.github/workflows/pages.yml']
+    paths:
+      - index.html
+      - market.html
+      - reports/**
+      - scripts/build_report_index.py
+      - data/**
+      - .github/workflows/pages.yml
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,6 +25,8 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Build searchable archive index
+        run: python3 scripts/build_report_index.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
