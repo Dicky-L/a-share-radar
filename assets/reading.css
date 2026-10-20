@@ -74,3 +74,9 @@
   .read-digest {margin:8px 0}.content{color:#111;font-size:11pt;padding:12px}.read-section-body[hidden]{display:block}
   .content h2 { break-after:avoid; }.content table{break-inside:avoid}
 }
+
+/* Formal finance glossary: definition, formula, interpretation. */
+.term-panel .term-label {display:block;color:#99bdea;font-size:11px;font-weight:700;letter-spacing:.04em;margin:12px 0 4px;}
+.term-panel .term-formula {font-size:13px;line-height:1.75;padding:10px 12px;border:1px solid #425a79;border-radius:8px;background:#142943;overflow-wrap:anywhere;}
+:root[data-reader-theme="light"] .term-panel .term-label {color:#456a93;}
+:root[data-reader-theme="light"] .term-panel .term-formula {background:#eef4fb;border-color:#d4e1ef;color:#22415f;}
