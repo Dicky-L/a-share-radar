@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "description": "真实行情快照衍生统计，不能视为ChatGPT当天归档报告原始内容。",
+  "days": [
+    {
+      "date": "2026-10-20",
+      "market_turnover_yi": 14559.9926,
+      "scope": "沪深A股股票有效行情（含科创板；不含北交所/ETF；不含停牌、无有效行情者）",
+      "stock_count": 5224,
+      "valid_change_count": 5224,
+      "breadth": {
+        "up": 3433,
+        "down": 1661,
+        "flat": 130,
+        "missing": 0
+      },
+      "top_turnover": [
+        {
+          "code": "300750",
+          "name": "宁德时代",
+          "turnover_yi": 152.5246,
+          "change_pct": -2.97
+        },
+        {
+          "code": "688825",
+          "name": "长鑫科技",
+          "turnover_yi": 145.4944,
+          "change_pct": -2.89
+        },
+        {
+          "code": "300308",
+          "name": "中际旭创",
+          "turnover_yi": 144.6312,
+          "change_pct": -1.94
+        },
+        {
+          "code": "300502",
+          "name": "新易盛",
+          "turnover_yi": 112.1949,
+          "change_pct": -3.19
+        },
+        {
+          "code": "600487",
+          "name": "亨通光电",
+          "turnover_yi": 109.603,
+          "change_pct": 3.62
+        },
+        {
+          "code": "688256",
+          "name": "寒武纪",
+          "turnover_yi": 84.104,
+          "change_pct": -0.81
+        },
+        {
+          "code": "603986",
+          "name": "兆易创新",
+          "turnover_yi": 77.5151,
+          "change_pct": 0
+        },
+        {
+          "code": "600183",
+          "name": "生益科技",
+          "turnover_yi": 65.8609,
+          "change_pct": -0.34
+        },
+        {
+          "code": "601899",
+          "name": "紫金矿业",
+          "turnover_yi": 60.4973,
+          "change_pct": -2.45
+        },
+        {
+          "code": "002384",
+          "name": "东山精密",
+          "turnover_yi": 59.8987,
+          "change_pct": 0
+        }
+      ],
+      "sectors": [],
+      "coverage_pct": 100,
+      "quality_status": "partial",
+      "source": "归档股票快照 data/snapshots/2026-10-20.json",
+      "data_sources": [
+        {
+          "provider": "AKShare",
+          "api": "AKShare Tencent",
+          "role": "发现沪深A股股票代码"
+        },
+        {
+          "provider": "Tencent",
+          "api": "qt.gtimg.cn",
+          "role": "逐股核验2026交易日及行情"
+        }
+      ]
+    }
+  ]
+}
