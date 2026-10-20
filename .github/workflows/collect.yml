@@ -74,6 +74,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+      - name: Build daily report archive before publishing
+        run: python3 scripts/build_report_index.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
