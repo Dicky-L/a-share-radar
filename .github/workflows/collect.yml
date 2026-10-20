@@ -45,14 +45,25 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add data/
-          if ! git diff --staged --quiet; then
-            git commit -m "data: publish verified post-close snapshot"
-            git push
-            echo "updated=true" >> "$GITHUB_OUTPUT"
-          else
+          if git diff --staged --quiet; then
             echo "updated=false" >> "$GITHUB_OUTPUT"
             echo "No new verified snapshot to publish."
+            exit 0
           fi
+          git commit -m "data: publish verified post-close snapshot"
+          # Other commits may land while the 5k-stock collector is running.
+          # Rebase rather than force pushing or discarding those commits.
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:main; then
+              echo "updated=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "Remote main changed; rebasing snapshot commit (attempt $attempt)."
+            git pull --rebase origin main
+            sleep "$attempt"
+          done
+          echo "Failed to safely push the snapshot after four attempts." >&2
+          exit 1
 
   deploy:
     name: Publish collected data to GitHub Pages
