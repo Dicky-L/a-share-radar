@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "extraction": "Only explicit dated Markdown stock tables; no inference of buys, sells, success or omissions.",
+  "records": [
+    {
+      "date": "2026-10-15",
+      "code": "003006",
+      "name": "百亚股份",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "观察候选",
+      "reason": "缩量回落后等待再次突破；原观察位23.08元",
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-15.md"
+    },
+    {
+      "date": "2026-10-15",
+      "code": "601985",
+      "name": "中国核电",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "观察候选",
+      "reason": "放量后缩量整理；原观察位9.52元",
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-15.md"
+    },
+    {
+      "date": "2026-10-16",
+      "code": "003006",
+      "name": "百亚股份",
+      "pool": null,
+      "role": "historical_review",
+      "section": "观察池验证",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-16.md"
+    },
+    {
+      "date": "2026-10-16",
+      "code": "601985",
+      "name": "中国核电",
+      "pool": null,
+      "role": "historical_review",
+      "section": "观察池验证",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-16.md"
+    },
+    {
+      "date": "2026-10-17",
+      "code": "600893",
+      "name": "航发动力",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "下一个交易日条件观察",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-17.md"
+    },
+    {
+      "date": "2026-10-17",
+      "code": "000338",
+      "name": "潍柴动力",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "下一个交易日条件观察",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-17.md"
+    },
+    {
+      "date": "2026-10-17",
+      "code": "601985",
+      "name": "中国核电",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "下一个交易日条件观察",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-17.md"
+    },
+    {
+      "date": "2026-10-17",
+      "code": "003816",
+      "name": "中国广核",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "下一个交易日条件观察",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-17.md"
+    },
+    {
+      "date": "2026-10-19",
+      "code": "601985",
+      "name": "中国核电",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "观察池",
+      "reason": "突破后等待放量收盘确认",
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-19.md"
+    },
+    {
+      "date": "2026-10-19",
+      "code": "003816",
+      "name": "中国广核",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "观察池",
+      "reason": "突破后等待放量收盘确认",
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-19.md"
+    },
+    {
+      "date": "2026-10-19",
+      "code": "600183",
+      "name": "生益科技",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "观察池",
+      "reason": "基本面催化与回踩企稳二次确认",
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-19.md"
+    }
+  ],
+  "stocks": [
+    {
+      "code": "600183",
+      "name": "生益科技",
+      "observations": [
+        {
+          "date": "2026-10-19",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        }
+      ]
+    },
+    {
+      "code": "600893",
+      "name": "航发动力",
+      "observations": [
+        {
+          "date": "2026-10-17",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        }
+      ]
+    },
+    {
+      "code": "601985",
+      "name": "中国核电",
+      "observations": [
+        {
+          "date": "2026-10-15",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        },
+        {
+          "date": "2026-10-16",
+          "pool": null,
+          "role": "historical_review",
+          "report_status": "summary"
+        },
+        {
+          "date": "2026-10-17",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        },
+        {
+          "date": "2026-10-19",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        }
+      ]
+    },
+    {
+      "code": "003006",
+      "name": "百亚股份",
+      "observations": [
+        {
+          "date": "2026-10-15",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        },
+        {
+          "date": "2026-10-16",
+          "pool": null,
+          "role": "historical_review",
+          "report_status": "summary"
+        }
+      ]
+    },
+    {
+      "code": "000338",
+      "name": "潍柴动力",
+      "observations": [
+        {
+          "date": "2026-10-17",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        }
+      ]
+    },
+    {
+      "code": "003816",
+      "name": "中国广核",
+      "observations": [
+        {
+          "date": "2026-10-17",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        },
+        {
+          "date": "2026-10-19",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        }
+      ]
+    }
+  ]
+}
