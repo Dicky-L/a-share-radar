@@ -68,40 +68,8 @@
     },
     {
       "date": "2026-10-17",
-      "code": "600893",
-      "name": "航发动力",
-      "pool": "B",
-      "role": "watchlist",
-      "section": "下一个交易日条件观察",
-      "reason": null,
-      "entry_trigger": null,
-      "no_chase": null,
-      "invalidation": null,
-      "exit_plan": null,
-      "risk": null,
-      "report_status": "summary",
-      "source_file": "./reports/2026-10-17.md"
-    },
-    {
-      "date": "2026-10-17",
       "code": "000338",
       "name": "潍柴动力",
-      "pool": "B",
-      "role": "watchlist",
-      "section": "下一个交易日条件观察",
-      "reason": null,
-      "entry_trigger": null,
-      "no_chase": null,
-      "invalidation": null,
-      "exit_plan": null,
-      "risk": null,
-      "report_status": "summary",
-      "source_file": "./reports/2026-10-17.md"
-    },
-    {
-      "date": "2026-10-17",
-      "code": "601985",
-      "name": "中国核电",
       "pool": "B",
       "role": "watchlist",
       "section": "下一个交易日条件观察",
@@ -131,20 +99,100 @@
       "source_file": "./reports/2026-10-17.md"
     },
     {
-      "date": "2026-10-19",
-      "code": "601985",
-      "name": "中国核电",
+      "date": "2026-10-17",
+      "code": "600893",
+      "name": "航发动力",
       "pool": "B",
       "role": "watchlist",
-      "section": "观察池",
-      "reason": "突破后等待放量收盘确认",
+      "section": "下一个交易日条件观察",
+      "reason": null,
       "entry_trigger": null,
       "no_chase": null,
       "invalidation": null,
       "exit_plan": null,
       "risk": null,
       "report_status": "summary",
-      "source_file": "./reports/2026-10-19.md"
+      "source_file": "./reports/2026-10-17.md"
+    },
+    {
+      "date": "2026-10-17",
+      "code": "601985",
+      "name": "中国核电",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "下一个交易日条件观察",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-17.md"
+    },
+    {
+      "date": "2026-10-18",
+      "code": "000338",
+      "name": "潍柴动力",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "候选池",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-18.md"
+    },
+    {
+      "date": "2026-10-18",
+      "code": "003816",
+      "name": "中国广核",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "候选池",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-18.md"
+    },
+    {
+      "date": "2026-10-18",
+      "code": "600893",
+      "name": "航发动力",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "候选池",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-18.md"
+    },
+    {
+      "date": "2026-10-18",
+      "code": "601985",
+      "name": "中国核电",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "候选池",
+      "reason": null,
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-18.md"
     },
     {
       "date": "2026-10-19",
@@ -177,6 +225,22 @@
       "risk": null,
       "report_status": "summary",
       "source_file": "./reports/2026-10-19.md"
+    },
+    {
+      "date": "2026-10-19",
+      "code": "601985",
+      "name": "中国核电",
+      "pool": "B",
+      "role": "watchlist",
+      "section": "观察池",
+      "reason": "突破后等待放量收盘确认",
+      "entry_trigger": null,
+      "no_chase": null,
+      "invalidation": null,
+      "exit_plan": null,
+      "risk": null,
+      "report_status": "summary",
+      "source_file": "./reports/2026-10-19.md"
     }
   ],
   "stocks": [
@@ -201,6 +265,12 @@
           "pool": "B",
           "role": "watchlist",
           "report_status": "summary"
+        },
+        {
+          "date": "2026-10-18",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
         }
       ]
     },
@@ -222,6 +292,12 @@
         },
         {
           "date": "2026-10-17",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        },
+        {
+          "date": "2026-10-18",
           "pool": "B",
           "role": "watchlist",
           "report_status": "summary"
@@ -261,6 +337,12 @@
           "pool": "B",
           "role": "watchlist",
           "report_status": "summary"
+        },
+        {
+          "date": "2026-10-18",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
         }
       ]
     },
@@ -270,6 +352,12 @@
       "observations": [
         {
           "date": "2026-10-17",
+          "pool": "B",
+          "role": "watchlist",
+          "report_status": "summary"
+        },
+        {
+          "date": "2026-10-18",
           "pool": "B",
           "role": "watchlist",
           "report_status": "summary"
