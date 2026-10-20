@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - index.html
+      - assets/**
       - market.html
       - reports/**
       - scripts/build_report_index.py
