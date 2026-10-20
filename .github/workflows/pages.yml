@@ -8,6 +8,7 @@ on:
       - market.html
       - reports/**
       - scripts/build_report_index.py
+      - scripts/build_candidate_index.py
       - scripts/build_chart_data.py
       - data/**
       - .github/workflows/pages.yml
@@ -28,11 +29,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify report reader JavaScript syntax
-        run: node --check assets/reading.js && node --check assets/charts.js
+        run: node --check assets/reading.js && node --check assets/charts.js && node --check assets/pickboard.js
+      - name: Test stock-selection archive
+        run: python3 -m unittest discover -s tests -p 'test_candidate_index.py' -v
       - name: Build searchable archive index
         run: python3 scripts/build_report_index.py
       - name: Test market chart data validation
         run: python3 -m unittest discover -s tests -p 'test_chart_data.py' -v
+      - name: Build archived stock-selection index
+        run: python3 scripts/build_candidate_index.py
       - name: Build verified market visual summaries
         run: python3 scripts/build_chart_data.py
       - uses: actions/configure-pages@v5
