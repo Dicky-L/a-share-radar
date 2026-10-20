@@ -11,8 +11,9 @@ main{max-width:1350px;margin:auto;padding:0 22px 50px;display:grid;grid-template
 </style>
 <link rel="stylesheet" href="./assets/reading.css">
 <link rel="stylesheet" href="./assets/charts.css">
-<header><div><div class="eyebrow">DAILY RADAR REPORTS</div><h1>A股启动与卖出雷达</h1><p>18:00 推送归档中心 · 按日期阅读 · 股票/板块关键词检索 · 历史复盘</p></div><nav class="nav"><a href="./market.html">原行情工作台 ↗</a><a href="https://github.com/Dicky-L/a-share-radar/tree/main/reports">GitHub 报告源 ↗</a></nav></header>
-<main><aside class="side"><div class="sidehead"><strong>日报目录 <span id="count" class="subtle"></span></strong><input id="search" type="search" placeholder="搜索股票、板块、日期和报告内容" aria-label="搜索日报"/><div class="filter"><input id="month" type="month" aria-label="按月筛选"/><button id="reset">清除</button></div><p class="subtle">旧报告摘要会标记“摘要”，不冒充原始全文。</p></div><div id="list" class="list"></div></aside>
+<link rel="stylesheet" href="./assets/pickboard.css">
+<header><div><div class="eyebrow">DAILY RADAR REPORTS</div><h1>A股启动与卖出雷达</h1><p>选股决策优先 · A/B/C观察池 · 买入验证与卖出管理 · 历史复盘</p></div><nav class="nav"><a href="./market.html">原行情工作台 ↗</a><a href="https://github.com/Dicky-L/a-share-radar/tree/main/reports">GitHub 报告源 ↗</a></nav></header>
+<main><aside class="side"><div class="sidehead"><strong>选股日报 <span id="count" class="subtle"></span></strong><input id="search" type="search" placeholder="搜索股票、板块、日期和报告内容" aria-label="搜索日报"/><div class="filter"><input id="month" type="month" aria-label="按月筛选"/><button id="reset">清除</button></div><p class="subtle">旧报告摘要会标记“摘要”，不冒充原始全文。</p></div><div id="list" class="list"></div></aside>
 <article class="reader"><div class="readerhead"><div class="eyebrow">RESEARCH ARCHIVE</div><h2 id="title">加载报告中…</h2><div class="meta" id="meta"></div><div class="controls"><button disabled id="copy">复制正文</button><button disabled id="permalink">复制本篇链接</button><button disabled id="raw">查看原始 Markdown</button></div></div><div class="content" id="content"><div class="placeholder">读取归档中…</div></div></article></main>
 <footer>仅供研究，不构成投资建议。公开仓库请勿归档真实持仓成本、账户信息或其他敏感资料。ChatGPT 18:00推送与网站自动入库是两个独立环节。</footer>
 <script>
@@ -43,7 +44,7 @@ function renderMarkdown(src){
 function filtered(){let q=$("search").value.trim().toLowerCase(),m=$("month").value;return entries.filter(x=>(!m||x.date.startsWith(m))&&(!q||[x.date,x.title,x.preview,x.search_text].join(" ").toLowerCase().includes(q)))}
 function list(){let matches=filtered();$("count").textContent=matches.length+"篇";$("list").innerHTML=matches.length?matches.map(e=>"<button type='button' data-date='"+esc(e.date)+"' class='item "+(active===e.date?"current":"")+"'><span class='date'>"+esc(e.date)+"</span><span class='tag "+(e.status==="original"?"full":"")+"'>"+(e.status==="original"?"全文":"摘要")+"</span><span class='desc'>"+esc(e.preview)+"</span></button>").join(""):"<div class='placeholder'>没有匹配的报告</div>"}
 async function openReport(date){let item=entries.find(e=>e.date===date);if(!item)return;active=date;list();$("title").textContent=item.title;$("meta").textContent="发布日期 "+item.date+" · "+(item.status==="original"?"全文归档":"历史摘要回填")+" · "+(item.source||"仓库");$("content").innerHTML="<div class='placeholder'>正在读取日报…</div>";filepath=item.file;
-try{let r=await fetch(item.file+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);current=await r.text();$("content").innerHTML=renderMarkdown(current);window.RadarReader?.refresh?.();window.RadarCurrentReport={date:item.date,status:item.status,markdown:current};window.RadarCharts?.render?.(window.RadarCurrentReport);["copy","permalink","raw"].forEach(id=>$(id).disabled=false);let url=new URL(location.href);url.searchParams.set("date",date);history.replaceState(null,"",url)}catch(e){$("content").textContent="无法读取报告："+e.message}}
+try{let r=await fetch(item.file+"?v="+Date.now(),{cache:"no-store"});if(!r.ok)throw Error("HTTP "+r.status);current=await r.text();$("content").innerHTML=renderMarkdown(current);window.RadarReader?.refresh?.();window.RadarCurrentReport={date:item.date,status:item.status,markdown:current};window.RadarCharts?.render?.(window.RadarCurrentReport);window.RadarPickBoard?.render?.(window.RadarCurrentReport);["copy","permalink","raw"].forEach(id=>$(id).disabled=false);let url=new URL(location.href);url.searchParams.set("date",date);history.replaceState(null,"",url)}catch(e){$("content").textContent="无法读取报告："+e.message}}
 $("list").onclick=e=>{let el=e.target.closest("[data-date]");if(el)openReport(el.dataset.date)};
 $("search").oninput=list;$("month").onchange=list;$("reset").onclick=()=>{$("search").value="";$("month").value="";list()};
 $("copy").onclick=async()=>{try{await navigator.clipboard.writeText(current);$("copy").textContent="已复制"}catch(e){$("copy").textContent="复制失败"}};
@@ -53,4 +54,5 @@ $("raw").onclick=()=>{if(filepath)window.open(filepath,"_blank","noopener,norefe
 </script>
 <script src="./assets/reading.js" defer></script>
 <script src="./assets/charts.js" defer></script>
+<script src="./assets/pickboard.js" defer></script>
 </html>
