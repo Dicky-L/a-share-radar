@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "date": null,
+  "market": null,
+  "sectors": [],
+  "stocks": [],
+  "quality": {
+    "status": "unavailable",
+    "message": "AKShare数据尚未成功采集"
+  },
+  "data_sources": []
+}
