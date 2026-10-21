@@ -118,6 +118,7 @@ jobs:
           python scripts/build_report_index.py
           python scripts/build_candidate_index.py
           python scripts/build_chart_data.py
+          python scripts/build_performance.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
