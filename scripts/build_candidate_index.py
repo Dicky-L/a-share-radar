@@ -59,7 +59,7 @@ def extract(text: str, day: str, status: str):
         # headline (e.g. "**B池：生益科技（600183，电子...）**").
         # Only an explicit pool + ticker qualifies; never infer retrospectively.
         prose_match = re.search(
-            r"([ABC])池[:：]\\s*([\\u4e00-\\u9fff]{2,12})[（(]((?:60|00|30)\\d{4})[，,)）]",
+            r"([ABC])池[:：]\s*([\u4e00-\u9fff]{2,12})[（(]((?:60|00|30)\d{4})[，,)）]",
             line, re.I
         )
         if prose_match:
@@ -106,7 +106,7 @@ def extract(text: str, day: str, status: str):
             original_reason = col(headers, vals, ("观察逻辑", "观察思路", "理由", "分析", "逻辑", "依据"))
             if not original_reason:
                 tagged_reason = col(headers, vals, ("观察类别",))
-                original_reason = re.sub(r"^[ABC]池[,，\\s]*", "", tagged_reason) if tagged_reason else ""
+                original_reason = re.sub(r"^[ABC]池[,，\s]*", "", tagged_reason) if tagged_reason else ""
             trigger = col(headers, vals, ("入场条件", "买入条件", "买入触发", "验证条件", "触发条件"))
             avoid = col(headers, vals, ("不追高", "禁止追高", "追高限制"))
             invalidation = col(headers, vals, ("失效", "止损"))
