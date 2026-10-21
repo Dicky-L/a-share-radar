@@ -129,6 +129,37 @@ def build(folder=REPORTS):
         if status not in {"original","summary"}:
             raise ValueError("Invalid report provenance: "+path.name)
         entries += extract(parts[2],path.stem,status)
+    # Recover only explicitly documented prior-task fields. Never re-label
+    # these supplementary notes as a complete original report.
+    details_path = folder / "recovered-details.json"
+    if details_path.exists():
+        supplement = json.loads(details_path.read_text(encoding="utf-8"))
+        if supplement.get("schema_version") != 1 or not isinstance(supplement.get("items"), list):
+            raise ValueError("Recovered details index invalid")
+        existing = {(row["date"],row["code"],row["role"]):row for row in entries}
+        seen_supplements = set()
+        for note in supplement["items"]:
+            day,code = note.get("date"),note.get("code")
+            if not isinstance(day,str) or not DATE_RE.fullmatch(day+".md") or not isinstance(code,str) or not TICKER_RE.fullmatch(code):
+                raise ValueError("Bad documented stock detail key")
+            key = (day,code,"watchlist")
+            if key in seen_supplements:
+                raise ValueError("Duplicate historical details "+str(key))
+            seen_supplements.add(key)
+            row = existing.get(key)
+            if not row:
+                raise ValueError("Supplement has no matching archived watchlist "+str(key))
+            for field in ("reason","entry_trigger","no_chase","invalidation","exit_plan","risk"):
+                value = note.get(field)
+                if value is None:continue
+                if not isinstance(value,str) or not value.strip():
+                    raise ValueError("Empty/non-text recovered detail "+field)
+                original = row.get(field)
+                if original and original != value:
+                    row[field] = original+"；补充：" + value if field=="reason" else original+"；历史推送补充："+value
+                else:
+                    row[field] = value
+            row["supplement_source"] = note.get("provenance","此前推送记录可检索摘要（非原始全文）")
     history = {}
     for row in entries:
         key = row["code"]
