@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>选股绩效总览 | A股启动与卖出雷达</title>
+<style>
+:root{color-scheme:light;font:15px/1.65 -apple-system,BlinkMacSystemFont,system-ui,"PingFang SC","Microsoft Yahei",sans-serif;color:#1c334c;background:#eff4fb}
+*{box-sizing:border-box}body{margin:0}a{color:#24629b}header,main,footer{max-width:1280px;margin:auto;padding:20px 25px}
+header{display:flex;justify-content:space-between;gap:15px;align-items:center}
+header h1{font-size:clamp(23px,3vw,32px);margin:4px 0;color:#173653}
+small,.muted{color:#607b99;font-size:12px}nav{display:flex;gap:8px;flex-wrap:wrap}
+nav a{border:1px solid #bdd2e7;border-radius:9px;padding:9px 13px;background:white;text-decoration:none;white-space:nowrap;font-size:13px}
+.kicker{color:#5378a0;letter-spacing:.1em;font-size:11px;font-weight:700}
+.panel{background:white;border:1px solid #d3e0ef;border-radius:14px;margin-bottom:17px;padding:20px}
+.intro{font-size:14px;color:#365575;line-height:1.8}
+.warning{padding:12px 16px;border-radius:9px;border-left:3px solid #c79446;background:#fff6e7;color:#735325;font-size:13px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:16px 0}
+.metric{border:1px solid #d3e1ef;border-radius:11px;padding:15px;background:#f6f9fd}
+.metric .big{font-size:26px;font-weight:800;color:#1f405e}
+.metric .sub{font-size:11px;color:#68819e}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:16px 0}
+input,select{border-radius:8px;border:1px solid #bfd1e4;padding:10px 12px;background:white;color:#173454;font:inherit}
+input{flex:1;min-width:170px;max-width:350px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:940px;font-size:13px}
+th,td{padding:13px 9px;text-align:left;border-bottom:1px solid #e2eaf5;vertical-align:middle}
+thead th{background:#f4f8fd;color:#55718d;position:sticky;top:0}
+tbody tr:hover{background:#f7faff}
+.stock{font-weight:750;color:#1c405f}.stock small{display:block;font-weight:450;font-variant-numeric:tabular-nums}
+.pool{font-size:11px;color:#936018;border-radius:7px;background:#fff0d2;padding:5px 8px}
+.pool.A{background:#daf3ef;color:#187b6d}.pool.C{background:#ffe5e5;color:#9c4046}
+.pos{color:#cc4343;font-weight:700}.neg{color:#16826b;font-weight:700}.neutral{color:#688198}
+.micro{font-size:11px;color:#7991ad}
+.chart{width:174px;height:52px;display:block}
+.nodata{color:#8197af;font-size:12px}
+footer{font-size:12px;color:#7890aa;padding-bottom:40px}
+.badge{background:#eef3fa;border-radius:7px;padding:5px 8px;font-size:11px;color:#607892}
+.empty{padding:24px;text-align:center;color:#69819e}
+details{margin-top:13px}summary{cursor:pointer;font-weight:650;color:#365e83}
+@media(max-width:850px){header{display:block;padding:18px 15px}header nav{margin-top:15px}main{padding:5px 13px}.panel{padding:15px}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}table{min-width:900px}}
+</style></head><body>
+<header><div><div class="kicker">SELECTION ACCOUNTABILITY / 选股追踪</div><h1>选股绩效总览</h1><small>每一期观察股都留痕，用真实后续收盘走势检验，不删除失败样本</small></div><nav><a href="./">← 每日选股日报</a><a href="./market.html">历史行情查询</a></nav></header>
+<main>
+<section class="panel">
+ <div class="warning"><strong>评估口径非常重要：</strong>本页统计“推荐日已知收盘价 → 后续第N个交易日收盘价”的变动，并非实际买入收益。观察位未必触发；未检查盘中成交、追高约束、滑点、手续费、T+1及除权分红，也未做指数超额收益和完整策略回测。历史报告摘要不等于完整推荐原文。</div>
+ <div class="summary" id="summary"><div class="metric">正在加载真实历史数据…</div></div>
+ <div class="intro" id="coverage"></div>
+</section>
+<section class="panel">
+ <h2 style="margin-top:0;font-size:20px">逐次选股 · 后续走势</h2>
+ <p class="intro">同一只股票在不同日期重复被观察，会保留为不同记录，但它们不是彼此独立的投资案例。D+1 / D+3 指报告后的交易日，不是自然日。</p>
+ <div class="toolbar"><input id="search" placeholder="股票名称或代码" type="search" aria-label="搜索股票"/>
+ <select id="pool" aria-label="筛选观察池"><option value="all">全部观察池</option><option value="A">A池</option><option value="B">B池</option><option value="C">C池</option><option value="unknown">未标池别</option></select>
+ <select id="date" aria-label="筛选日报"><option value="all">全部报告日期</option></select>
+ <button id="reset" style="border:1px solid #bccfe4;border-radius:8px;background:#eaf3ff;color:#2a5680;padding:10px 13px;cursor:pointer">清除</button>
+ </div>
+ <div id="table" class="tablewrap"><div class="empty">读取数据中…</div></div>
+ <p class="micro">走势曲线使用归档收盘价相对基准收盘的变动百分比，灰色虚线为0%。鼠标停留可查看日期和实际收盘价；颜色红=上涨、绿=下跌。</p>
+</section>
+<section class="panel">
+ <h2 style="font-size:18px;margin-top:0">怎样判断推荐是否真的帮助赚钱？</h2>
+ <p class="intro">第一步是这页的<strong>观察结果</strong>：如实展示推荐之后股价怎样走。第二步是<strong>触发验证</strong>：依据当期冻结的买入条件，用成交数据判断是否真的能在合理价格买入。第三步才是<strong>策略收益</strong>：加入止损/止盈、T+1、交易费用、滑点和基准指数，记录最大回撤与样本外结果。当前仅完成第一步的一部分，不能用“上涨比例”冒充策略胜率。</p>
+ <details><summary>数据口径、局限与下一阶段验收</summary><p class="intro">数据来自仓库 reports/candidates.json 和 data/snapshots/YYYY-MM-DD.json。行情回填依据10月20日股票名录，历史退市、分红除息及券商执行口径可能产生偏差；如果后续交易日不够或股票价格缺失，则显示“待观察”。后续计划接入 OHLC高低价、复权处理、触发价量条件、分批卖出与现金流模型，严格冻结信号生成时的信息。</p></details>
+</section>
+</main><footer>投资研究与风险管理工具，并非交易委托、保证盈利或建议使用杠杆。追求长期可复制的正期望与回撤控制，比单次涨幅重要。</footer>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=(n,d=2)=>typeof n==="number"&&Number.isFinite(n)?n.toLocaleString("zh-CN",{maximumFractionDigits:d}):"待观察";
+let records=[],summary={},dates=[];
+const cls=n=>typeof n!=="number"?"neutral":n>0?"pos":n<0?"neg":"neutral";
+const formatPct=n=>typeof n==="number"?(n>0?"+":"")+fmt(n,2)+"%":"待观察";
+function chart(points,reference){
+ const valid=points.filter(x=>typeof x.return_pct==="number");
+ if(!valid.length)return '<span class="nodata">无后续行情</span>';
+ const ordered=[{trading_day:0,date:reference.date,close:reference.close,return_pct:0},...points];
+ const xs=ordered.map(p=>p.trading_day),ys=ordered.filter(p=>typeof p.return_pct==="number").map(p=>p.return_pct);
+ const limit=Math.max(2,Math.max(...ys.map(Math.abs))*1.15);
+ const left=10,right=160,top=7,bottom=43;
+ const width=Math.max(1,Math.max(...xs));
+ const x=p=>left+(p.trading_day/width)*(right-left);
+ const y=p=>25-(p.return_pct/limit)*18;
+ let segments=[],current=[];
+ for(const p of ordered){
+   if(typeof p.return_pct!=="number"){if(current.length>1)segments.push(current);current=[];continue}
+   current.push(p);
+ }
+ if(current.length>1)segments.push(current);
+ const last=valid.at(-1),color=last.return_pct>=0?"#ca4d51":"#219879";
+ const lines=segments.map(segment=>'<polyline fill="none" stroke="'+color+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" points="'+segment.map(p=>x(p).toFixed(1)+','+y(p).toFixed(1)).join(" ")+'"/>').join("");
+ const circles=ordered.filter(p=>typeof p.return_pct==="number").map(p=>
+   '<circle cx="'+x(p).toFixed(1)+'" cy="'+y(p).toFixed(1)+'" r="2.5" fill="'+color+'"><title>'+
+    escapeHtml(p.date+" 收盘："+fmt(p.close,3)+"元；相对基准："+formatPct(p.return_pct))+"</title></circle>").join("");
+ return '<svg class="chart" viewBox="0 0 170 52" role="img" aria-label="逐交易日收盘涨跌走势"><line x1="7" y1="25" x2="164" y2="25" stroke="#94a9bf" stroke-dasharray="3,4"/>'+lines+circles+'</svg>';
+}
+function badge(row){return '<span class="pool '+escapeHtml(row.pool||"")+'">'+escapeHtml(row.pool?row.pool+"池":"未标")+'</span>'}
+function paint(){
+ const q=$("search").value.trim().toLowerCase(),pool=$("pool").value,day=$("date").value;
+ let arr=records.filter(r=>(!q||(r.name+r.code).toLowerCase().includes(q))&&
+   (pool==="all"||(pool==="unknown"?!r.pool:r.pool===pool))&&
+   (day==="all"||r.date===day));
+ arr.sort((a,b)=>b.date.localeCompare(a.date)||a.code.localeCompare(b.code));
+ const header='<table><thead><tr><th>报告日期 / 股票</th><th>池别</th><th>观察基准</th><th>D+1 收盘变化</th><th>D+3 收盘变化</th><th>逐日收盘走势</th><th>历史原文及条件</th></tr></thead><tbody>';
+ const rows=arr.map(r=>{
+   const d1=r.checkpoints?.d1?.return_pct,d3=r.checkpoints?.d3?.return_pct;
+   const note=r.supplement_source?"有历史补充条件":"待补详细条件";
+   return '<tr><td><span class="stock">'+escapeHtml(r.name)+'<small>'+escapeHtml(r.code)+'</small></span><div class="micro">'+escapeHtml(r.date)+' · '+(r.report_status==="summary"?"历史摘要":"原文")+'</div></td>'+
+   '<td>'+badge(r)+'</td><td>'+escapeHtml(r.reference_date||"无基准")+'<br><strong>'+fmt(r.reference_close,3)+'元</strong></td>'+
+   '<td class="'+cls(d1)+'">'+formatPct(d1)+'</td><td class="'+cls(d3)+'">'+formatPct(d3)+'</td>'+
+   '<td>'+chart(r.observations||[],{date:r.reference_date,close:r.reference_close})+'</td>'+
+   '<td><a href="./?date='+encodeURIComponent(r.date)+'">查看当期记录 ↗</a><div class="micro">'+note+'</div></td></tr>';
+ }).join("");
+ $("table").innerHTML=arr.length?header+rows+'</tbody></table>':'<div class="empty">当前筛选没有可核实的观察记录。</div>';
+}
+async function init(){
+ try{
+  const r=await fetch("./reports/performance.json?v="+Date.now(),{cache:"no-store"});
+  if(!r.ok)throw Error("HTTP "+r.status);
+  const d=await r.json();if(d.schema_version!==1||!Array.isArray(d.records))throw Error("数据结构错误");
+  records=d.records;summary=d.summary||{};dates=d.market_dates||[];
+  const cells=[
+   ["归档候选记录",summary.watchlist_rows,"含重复提及"],
+   ["涉及独立股票",summary.unique_tickers,"不同代码"],
+   ["D+1可核验记录",summary.d1_observed,"其余待观察"],
+   ["D+1收盘上涨记录",summary.d1_positive,"仅股价变化，不是策略胜率"]
+  ];
+  $("summary").innerHTML=cells.map(([name,value,note])=>'<div class="metric"><small>'+name+'</small><div class="big">'+(typeof value==="number"?value:"—")+'</div><div class="sub">'+note+'</div></div>').join("");
+  $("coverage").textContent="截至已归档最近行情日期 "+(dates.at(-1)||"待核")+
+    "；D+3可观察 "+(summary.d3_observed??0)+" 条。持仓买卖是否执行：未记录；因此尚不能证明有盈利策略。";
+  const opts=[...new Set(records.map(x=>x.date))].sort().reverse();
+  $("date").innerHTML='<option value="all">全部报告日期</option>'+opts.map(x=>'<option value="'+x+'">'+x+'</option>').join("");
+  const p=new URLSearchParams(location.search);if(p.get("code"))$("search").value=p.get("code");
+  if(opts.includes(p.get("date")))$("date").value=p.get("date");
+  paint();
+ }catch(e){$("table").innerHTML='<div class="empty">绩效数据暂未生成或读取失败：'+escapeHtml(e.message)+'。请查看GitHub Pages Actions工作流。</div>'}
+}
+$("search").oninput=paint;$("pool").onchange=paint;$("date").onchange=paint;
+$("reset").onclick=()=>{$("search").value="";$("pool").value="all";$("date").value="all";paint()};
+init();
+</script></body></html>
