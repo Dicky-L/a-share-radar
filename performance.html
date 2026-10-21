@@ -56,6 +56,11 @@ details{margin-top:13px}summary{cursor:pointer;font-weight:650;color:#365e83}
  <p class="micro">走势曲线使用归档收盘价相对基准收盘的变动百分比，灰色虚线为0%。鼠标停留可查看日期和实际收盘价；颜色红=上涨、绿=下跌。</p>
 </section>
 <section class="panel">
+ <h2 style="font-size:20px;margin-top:0">10月13日历史冻结批次 · 追溯样本（不计推荐成绩）</h2>
+ <div class="warning">这批股票由后续日报追溯；没有找到10月13日18:00真正发出的报告。它们不计入「当期推荐」或「推荐胜率」。保留后续走势，是为了客观追踪早期观察与失败案例。</div>
+ <div id="retro-table" class="tablewrap"><div class="empty">读取追溯样本中…</div></div>
+</section>
+<section class="panel">
  <h2 style="font-size:18px;margin-top:0">怎样判断推荐是否真的帮助赚钱？</h2>
  <p class="intro">第一步是这页的<strong>观察结果</strong>：如实展示推荐之后股价怎样走。第二步是<strong>触发验证</strong>：依据当期冻结的买入条件，用成交数据判断是否真的能在合理价格买入。第三步才是<strong>策略收益</strong>：加入止损/止盈、T+1、交易费用、滑点和基准指数，记录最大回撤与样本外结果。当前仅完成第一步的一部分，不能用“上涨比例”冒充策略胜率。</p>
  <details><summary>数据口径、局限与下一阶段验收</summary><p class="intro">数据来自仓库 reports/candidates.json 和 data/snapshots/YYYY-MM-DD.json。行情回填依据10月20日股票名录，历史退市、分红除息及券商执行口径可能产生偏差；如果后续交易日不够或股票价格缺失，则显示“待观察”。后续计划接入 OHLC高低价、复权处理、触发价量条件、分批卖出与现金流模型，严格冻结信号生成时的信息。</p></details>
@@ -66,7 +71,7 @@ details{margin-top:13px}summary{cursor:pointer;font-weight:650;color:#365e83}
 const $=id=>document.getElementById(id);
 const escapeHtml=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=(n,d=2)=>typeof n==="number"&&Number.isFinite(n)?n.toLocaleString("zh-CN",{maximumFractionDigits:d}):"待观察";
-let records=[],summary={},dates=[];
+let records=[],retros=[],summary={},dates=[];
 const cls=n=>typeof n!=="number"?"neutral":n>0?"pos":n<0?"neg":"neutral";
 const formatPct=n=>typeof n==="number"?(n>0?"+":"")+fmt(n,2)+"%":"待观察";
 function chart(points,reference){
@@ -110,15 +115,24 @@ function paint(){
    '<td><a href="./?date='+encodeURIComponent(r.date)+'">查看当期记录 ↗</a><div class="micro">'+note+'</div></td></tr>';
  }).join("");
  $("table").innerHTML=arr.length?header+rows+'</tbody></table>':'<div class="empty">当前筛选没有可核实的观察记录。</div>';
+ const legacy=retros.filter(r=>(!q||(r.name+r.code).toLowerCase().includes(q))&&(day==="all"||r.date===day));
+ const rhead='<table><thead><tr><th>追溯批次 / 股票</th><th>基准收盘</th><th>D+1收盘变化</th><th>D+3收盘变化</th><th>后续收盘走势</th><th>档案</th></tr></thead><tbody>';
+ const rrows=legacy.map(r=>'<tr><td><span class="stock">'+escapeHtml(r.name)+'<small>'+escapeHtml(r.code)+'</small></span><div class="micro">'+escapeHtml(r.date)+' · 事后追溯，非实发推荐</div></td>'+
+  '<td>'+fmt(r.reference_close,3)+'元</td>'+
+  '<td class="'+cls(r.checkpoints?.d1?.return_pct)+'">'+formatPct(r.checkpoints?.d1?.return_pct)+'</td>'+
+  '<td class="'+cls(r.checkpoints?.d3?.return_pct)+'">'+formatPct(r.checkpoints?.d3?.return_pct)+'</td>'+
+  '<td>'+chart(r.observations||[],{date:r.reference_date,close:r.reference_close})+'</td>'+
+  '<td><a href="./?date='+encodeURIComponent(r.date)+'">查看追溯归档 ↗</a></td></tr>').join("");
+ $("retro-table").innerHTML=legacy.length?rhead+rrows+'</tbody></table>':'<div class="empty">当前筛选下没有追溯冻结样本。</div>';
 }
 async function init(){
  try{
   const r=await fetch("./reports/performance.json?v="+Date.now(),{cache:"no-store"});
   if(!r.ok)throw Error("HTTP "+r.status);
   const d=await r.json();if(d.schema_version!==1||!Array.isArray(d.records))throw Error("数据结构错误");
-  records=d.records;summary=d.summary||{};dates=d.market_dates||[];
+  records=d.records;retros=d.retrospective_records||[];summary=d.summary||{};dates=d.market_dates||[];
   const cells=[
-   ["归档候选记录",summary.watchlist_rows,"含重复提及"],
+   ["历史观察候选",summary.watchlist_rows,"不含事后追溯样本"],
    ["涉及独立股票",summary.unique_tickers,"不同代码"],
    ["D+1可核验记录",summary.d1_observed,"其余待观察"],
    ["D+1收盘上涨记录",summary.d1_positive,"仅股价变化，不是策略胜率"]
@@ -126,7 +140,7 @@ async function init(){
   $("summary").innerHTML=cells.map(([name,value,note])=>'<div class="metric"><small>'+name+'</small><div class="big">'+(typeof value==="number"?value:"—")+'</div><div class="sub">'+note+'</div></div>').join("");
   $("coverage").textContent="截至已归档最近行情日期 "+(dates.at(-1)||"待核")+
     "；D+3可观察 "+(summary.d3_observed??0)+" 条。持仓买卖是否执行：未记录；因此尚不能证明有盈利策略。";
-  const opts=[...new Set(records.map(x=>x.date))].sort().reverse();
+  const opts=[...new Set([...records,...retros].map(x=>x.date))].sort().reverse();
   $("date").innerHTML='<option value="all">全部报告日期</option>'+opts.map(x=>'<option value="'+x+'">'+x+'</option>').join("");
   const p=new URLSearchParams(location.search);if(p.get("code"))$("search").value=p.get("code");
   if(opts.includes(p.get("date")))$("date").value=p.get("date");
