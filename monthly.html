@@ -1,0 +1,97 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>本月选股观察与卖出计划 · A股雷达</title>
+<style>
+:root{color-scheme:light;font:15px/1.6 system-ui,-apple-system,"PingFang SC","Microsoft Yahei",sans-serif;color:#1b3450;background:#f0f5fb}*{box-sizing:border-box}body{margin:0}
+header,main,footer{max-width:1280px;margin:auto;padding:23px 25px}header{display:flex;gap:16px;justify-content:space-between;align-items:center}h1{font-size:clamp(23px,3vw,30px);margin:2px 0;color:#173955}h2{font-size:19px}.eyebrow{color:#507fac;font-size:11px;font-weight:750;letter-spacing:.13em}.description{color:#67819d;font-size:13px;margin:4px 0}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{border:1px solid #c5d7ea;border-radius:8px;padding:10px 14px;background:white;color:#2d638e;text-decoration:none;font-size:12px}
+.panel{border:1px solid #d1deee;border-radius:14px;background:white;padding:19px;margin-bottom:17px}
+.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.controls input{border-radius:8px;border:1px solid #c8d8e8;padding:9px;font:inherit}
+.numbers{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-top:13px}.number{background:#f5f9fd;border-radius:10px;border:1px solid #dbe6f3;padding:13px}.number strong{font-size:24px;display:block}.number small,.subtle{color:#7189a5;font-size:11px}
+.warning{border-left:3px solid #cba05f;background:#fff6e6;padding:13px;border-radius:7px;color:#806333;font-size:13px;line-height:1.8}
+.month{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+.day{border:1px solid #d7e3f0;border-radius:11px;background:#fff;overflow:hidden}
+.day summary{list-style:none;cursor:pointer;padding:16px;display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
+.day summary::-webkit-details-marker{display:none}
+.day summary:hover{background:#f2f7fe}.day summary strong{font-size:16px}.day summary .brief{color:#7690aa;font-size:12px;flex:1}
+.status{padding:5px 9px;border-radius:20px;background:#e8f0fa;color:#4e6e91;font-size:11px;white-space:nowrap}
+.status.full{background:#e2f5ee;color:#257e60}.status.missing{background:#f2f3f6;color:#9ba4af}
+.status.retro{background:#fff1e0;color:#99661e}
+.day-body{border-top:1px solid #e0e9f3;padding:15px}
+.row{display:grid;grid-template-columns:165px minmax(0,1fr);gap:15px;padding:12px 0;border-bottom:1px solid #e6ecf5}.row:last-child{border-bottom:none}
+.stock{font-weight:700;color:#1b4568}.stock small{display:block;color:#7e94ac;font-size:12px;font-variant-numeric:tabular-nums}
+.values{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.field label{display:block;font-size:11px;color:#69829d;font-weight:700;margin-bottom:5px}.field p{margin:0;font-size:12px;color:#314f6b;line-height:1.6}
+.field.missing p{color:#96a6b8}
+.footnote{font-size:12px;color:#6b839d;line-height:1.8;margin-top:13px}
+.links{display:flex;gap:15px;flex-wrap:wrap;margin:13px 0 0;font-size:12px}a{color:#28699e}
+.pool{display:inline-block;font-size:10px;border-radius:6px;padding:3px 7px;margin-left:7px;background:#edf2f9;color:#5c7190}
+.pool.A{background:#dcf4eb;color:#157953}.pool.B{background:#fff0d4;color:#97661c}.pool.C{background:#ffe7e7;color:#aa4c4c}
+.error{color:#ac3939}footer{font-size:12px;color:#8698ac}
+@media(max-width:850px){header{display:block;padding:20px 14px}.nav{margin-top:15px}main{padding:4px 12px}.numbers{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr;gap:9px}.values{grid-template-columns:1fr;gap:10px}.day summary{align-items:start}.day summary .brief{min-width:80%;order:5}}
+</style>
+</head><body>
+<header><div><div class="eyebrow">MONTHLY SELECTION JOURNAL</div><h1>本月选股观察与卖出计划</h1><p class="description">每天的A/B/C池、买入验证、失效与退出条件一屏回顾 · 历史证据优先</p></div><nav class="nav"><a href="./">每日档案</a><a href="./performance.html">选股兑现追踪</a></nav></header>
+<main>
+<section class="panel"><div class="controls"><label for="month">选择月份：</label><input id="month" type="month" value="2026-10"/><span class="subtle">仅展示已归档的真实报告及已明确标记的追溯样本，不按历史涨跌重新创造建议。</span></div>
+<div class="numbers" id="counts"><div class="number">读取本月档案中…</div></div>
+<div class="warning">**数据口径：** 买入触发、结构失效和卖出计划来自当期报告或有来源的历史补录；缺失则显示「原报告未核实」。本月追溯样本与真实18:00推送分开。卖出条件为当期风险纪律，不代表已执行交易、更不能保证盈利。</div>
+</section>
+<section class="panel"><h2>每日选股档案</h2><div id="days" class="month">正在加载…</div></section>
+</main><footer>所示数据仅用于研究历史记录与风险管理。未获知本人真实持仓成本与成交，因此不显示实盘收益。公开仓库不储存个人账户数据。</footer>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let candidates=[],archives=[],dates=[];
+const details=(row)=>[
+ ["入选依据",row.reason],["买入验证",row.entry_trigger],["失效 / 止损",row.invalidation],["卖出 / 利润保护",row.exit_plan]
+];
+function stock(row){
+ const fields=details(row).map(([title,value])=>'<div class="field '+(value?"":"missing")+'"><label>'+title+'</label><p>'+esc(value||"当期原报告未核实；不得推断具体交易价格")+'</p></div>').join("");
+ return '<div class="row"><div><span class="stock">'+esc(row.name)+'<small>'+esc(row.code)+'</small></span><span class="pool '+esc(row.pool||"")+'">'+esc(row.pool?row.pool+"池":"未标池别")+'</span></div><div><div class="values">'+fields+'</div>'+
+ '<div class="footnote">'+(row.supplement_source?"已标注补录来源："+esc(row.supplement_source)+"；":"")+'仅记录当时观察条件，不是已执行交易。</div></div></div>';
+}
+function render(){
+ const month=$("month").value,year=Number(month.slice(0,4)),mo=Number(month.slice(5,7));
+ if(!/^\d{4}-\d{2}$/.test(month)||mo<1||mo>12)return;
+ const max=new Date(Date.UTC(year,mo,0)).getUTCDate();
+ const applicable=candidates.filter(r=>r.date.startsWith(month)&&r.role==="watchlist");
+ const reviews=candidates.filter(r=>r.date.startsWith(month)&&r.role==="historical_review");
+ const reportDates=archives.filter(r=>r.date.startsWith(month));
+ const counts=[
+ ["有归档报告的日期",reportDates.length],["当期候选记录",applicable.length],["追溯/复盘记录",reviews.length],["具有明确卖出说明",applicable.filter(r=>!!r.exit_plan).length]];
+ $("counts").innerHTML=counts.map(([label,value])=>'<div class="number"><small>'+label+'</small><strong>'+value+'</strong></div>').join("");
+ const query=new URLSearchParams(location.search).get("date");
+ let html="";
+ for(let i=max;i>=1;i--){
+   const date=month+"-"+String(i).padStart(2,"0");
+   const report=reportDates.find(r=>r.date===date);
+   const rows=applicable.filter(r=>r.date===date);
+   const ret=reviews.filter(r=>r.date===date);
+   const isRetraced=ret.length&&!rows.length;
+   const status=report?(report.status==="original"?"完整归档":"报告摘要"):"无选股报告";
+   let cls=report?.status==="original"?"full":!report?"missing":isRetraced?"retro":"";
+   let body="";
+   if(rows.length)body+='<div>'+rows.map(stock).join("")+'</div>';
+   if(ret.length){body+='<details><summary style="padding:10px 0;color:#a16f2c">'+ret.length+'条后续复盘/追溯记录（不作为当天新增推荐）</summary>'+
+     '<div>'+ret.map(stock).join("")+'</div></details>'}
+   if(!rows.length&&!ret.length)body='<p class="subtle">目前没有可核实的当期股票候选记录。'+(report?"请阅读原报告，不自动推断买卖计划。":"这一天未找回可核验的定时推送正文；不补造推荐。")+'</p>';
+   if(report)body+='<div class="links"><a href="./?date='+encodeURIComponent(date)+'">打开当期报告 ↗</a><a href="./performance.html?date='+encodeURIComponent(date)+'">查看后续股价变化 ↗</a></div>';
+   else if(dates.includes(date))body+='<div class="links"><a href="./?date='+encodeURIComponent(date)+'">查看当日真实行情（仅行情） ↗</a></div>';
+   let desc=rows.length?rows.map(r=>r.name+(r.pool?" "+r.pool+"池":"")).join("、"):(isRetraced?"追溯记录"+ret.length+"只":(dates.includes(date)?"仅行情数据":"无可核实当期候选"));
+   const open=query===date||date===month+"-21";
+   html+='<details class="day" '+(open?"open":"")+'><summary><strong>'+date+'</strong><span class="status '+cls+'">'+status+'</span><span class="brief">'+esc(desc)+'</span></summary><div class="day-body">'+body+'</div></details>';
+ }
+ $("days").innerHTML=html||'<p>本月尚无归档。</p>';
+}
+async function init(){
+ try{
+  const names=["./reports/candidates.json","./reports/index.json","./data/index.json"];
+  const data=await Promise.all(names.map(url=>fetch(url+"?v="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw Error(url+" HTTP "+r.status);return r.json()})));
+  candidates=data[0].records||[];archives=data[1].items||[];dates=data[2].dates||[];
+  if(!Array.isArray(candidates)||!Array.isArray(archives)||!Array.isArray(dates))throw Error("数据格式不符");
+  let qs=new URLSearchParams(location.search);const m=qs.get("month");if(m&&/^\d{4}-\d{2}$/.test(m))$("month").value=m;
+  $("month").onchange=render;render();
+ }catch(e){$("days").innerHTML='<div class="error">无法加载月度选股档案：'+esc(e.message)+"</div>"}
+}
+init();
+</script>
+</body></html>
