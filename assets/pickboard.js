@@ -55,12 +55,18 @@ function stockCard(rec){
  card.append(field("② 下一交易日买入验证",rec.entry_trigger));
  card.append(field("③ 失效与止损条件",rec.invalidation));
  card.append(field("④ 卖出与利润保护",rec.exit_plan));
+ if(rec.supplement_source){
+   card.append(make("p","pick-provenance","以上补充条件源自先前推送记录的可检索摘要，不是已保存的逐字完整原报告；请按当期日期理解，非当前买卖建议。"));
+ }
  if(rec.no_chase)card.append(field("追高约束",rec.no_chase));
  if(rec.risk)card.append(field("风险与拥挤度",rec.risk));
  const links=make("div","pick-links");
  const original=make("a","","阅读对应日报原文");
  original.href=reportLink(rec.date);
  links.append(original);
+ const score=make("a","","追踪推荐后的真实走势 ↗");
+ score.href="./performance.html?code="+encodeURIComponent(rec.code)+"&date="+encodeURIComponent(rec.date);
+ links.append(score);
  const timeline=stockTimeline(card,rec.code);
  if(timeline)links.append(timeline);
  card.insertBefore(links,card.lastElementChild?.classList.contains("pick-timeline")?card.lastElementChild:null);
@@ -91,6 +97,10 @@ function showCurrent(){
  const count=make("div","pick-count");
  count.append(make("strong","",watched.length),make("small","","只明确入选观察表的股票"));
  head.append(intro,count);body.append(head);
+ const performance=make("div","pick-links");
+ const perf=make("a","","查看全部股票的推荐兑现与走势总览 →");
+ perf.href="./performance.html";
+ performance.append(perf);body.append(performance);
  body.append(make("div","pick-meta","归档发布日期："+selection.date+"　·　"+(selection.status==="summary"?"来源：历史摘要（不是原始完整推送）":"来源：当期已归档原文")));
  body.append(make("div","pick-notice",
    "阅读提示：所有股票均为当期观察记录，非本人真实持仓，也不表示现在仍可买入。条件缺失就展示缺失，不补编买点、止损或盈利回测。"));
