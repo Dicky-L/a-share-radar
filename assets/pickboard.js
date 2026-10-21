@@ -98,6 +98,9 @@ function showCurrent(){
  count.append(make("strong","",watched.length),make("small","","只明确入选观察表的股票"));
  head.append(intro,count);body.append(head);
  const performance=make("div","pick-links");
+ const monthly=make("a","","按月份查看全部候选与卖出计划 →");
+ monthly.href="./monthly.html";
+ performance.append(monthly);
  const perf=make("a","","查看全部股票的推荐兑现与走势总览 →");
  perf.href="./performance.html";
  performance.append(perf);body.append(performance);
