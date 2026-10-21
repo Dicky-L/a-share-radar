@@ -55,6 +55,26 @@ def extract(text: str, day: str, status: str):
                         "exit_plan":None,"risk":None,"report_status":status,
                         "source_file":"./reports/"+day+".md",
                     })
+        # Dated original reports may describe a candidate in a bold prose
+        # headline (e.g. "**B池：生益科技（600183，电子...）**").
+        # Only an explicit pool + ticker qualifies; never infer retrospectively.
+        prose_match = re.search(
+            r"([ABC])池[:：]\\s*([\\u4e00-\\u9fff]{2,12})[（(]((?:60|00|30)\\d{4})[，,)）]",
+            line, re.I
+        )
+        if prose_match:
+            pool, name, ticker = prose_match.group(1).upper(), prose_match.group(2), prose_match.group(3)
+            key = (day,ticker,"watchlist")
+            if key not in seen:
+                seen.add(key)
+                result.append({
+                    "date":day, "code":ticker, "name":name, "pool":pool,
+                    "role":"watchlist", "section":section,
+                    "reason":None, "entry_trigger":None, "no_chase":None,
+                    "invalidation":None, "exit_plan":None, "risk":None,
+                    "report_status":status,
+                    "source_file":"./reports/"+day+".md",
+                })
         if not line.strip().startswith("|") or i+2 >= len(lines):
             continue
         headers = [plain(x) for x in cells(line)]
@@ -84,6 +104,9 @@ def extract(text: str, day: str, status: str):
             pool_match = re.search(r"(?<![a-zA-Z])([ABC])\s*(?:池|级|候选)?(?![a-zA-Z])", pool_raw, re.I)
             pool = pool_match.group(1).upper() if pool_match else None
             original_reason = col(headers, vals, ("观察逻辑", "观察思路", "理由", "分析", "逻辑", "依据"))
+            if not original_reason:
+                tagged_reason = col(headers, vals, ("观察类别",))
+                original_reason = re.sub(r"^[ABC]池[,，\\s]*", "", tagged_reason) if tagged_reason else ""
             trigger = col(headers, vals, ("入场条件", "买入条件", "买入触发", "验证条件", "触发条件"))
             avoid = col(headers, vals, ("不追高", "禁止追高", "追高限制"))
             invalidation = col(headers, vals, ("失效", "止损"))
