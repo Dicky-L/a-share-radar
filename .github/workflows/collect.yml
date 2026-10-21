@@ -91,6 +91,8 @@ jobs:
         run: python3 scripts/build_candidate_index.py
       - name: Build verified market visual summaries
         run: python3 scripts/build_chart_data.py
+      - name: Build selection outcome dashboard from verified closing snapshots
+        run: python3 scripts/build_performance.py
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
