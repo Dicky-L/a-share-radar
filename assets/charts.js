@@ -267,7 +267,7 @@ function show(tab){
 function render(obj){
  if(!root||!obj)return;
  selection.report={date:String(obj.date||""),status:obj.status,markdown:String(obj.markdown||"")};
- show("report");
+ show(obj.status==="market_only"?"date":"report");
 }
 function setup(){
  const reader=document.querySelector(".reader"),content=document.getElementById("content");
