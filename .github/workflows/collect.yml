@@ -1,12 +1,5 @@
 name: Collect verified AKShare post-close data
 on:
-  push:
-    branches: [main]
-    paths:
-      - collect.py
-      - requirements.txt
-      - tests/**
-      - .github/workflows/collect.yml
   schedule:
     # Beijing 18:15 Monday-Friday (GitHub cron uses UTC).
     - cron: '15 10 * * 1-5'
@@ -14,6 +7,12 @@ on:
 
 permissions:
   contents: read
+
+# Prevent overlapping manual and scheduled collectors from overwriting one
+# another's same-day data; avoid expensive collection on every source commit.
+concurrency:
+  group: a-share-postclose-collector
+  cancel-in-progress: false
 
 jobs:
   collect:
