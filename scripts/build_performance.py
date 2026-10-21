@@ -84,6 +84,13 @@ def build(candidates_path=CANDIDATES,index_path=INDEX,snapshots_dir=SNAPSHOTS):
                        "quality_status":doc.get("quality",{}).get("status")}
     signals=[x for x in candidates.get("records",[]) if x.get("role")=="watchlist"]
     results=[evaluate_signal(x,dates,quotes) for x in signals]
+    # Date-bucket retroactive freeze lists must never contribute to historical
+    # actual-report selection metrics (the Oct-13 task did not actually run).
+    retro=[x for x in candidates.get("records",[])
+           if x.get("role")=="historical_review" and str(x.get("section","")).startswith("历史冻结样本")]
+    retrospective=[evaluate_signal(x,dates,quotes) for x in retro]
+    for item in retrospective:
+        item["classification"]="retrospective_frozen_batch_not_actual_report"
     d1=[r["checkpoints"]["d1"]["return_pct"] for r in results if r["checkpoints"]["d1"] and r["checkpoints"]["d1"]["return_pct"] is not None]
     d3=[r["checkpoints"]["d3"]["return_pct"] for r in results if r["checkpoints"]["d3"] and r["checkpoints"]["d3"]["return_pct"] is not None]
     return {
@@ -101,7 +108,9 @@ def build(candidates_path=CANDIDATES,index_path=INDEX,snapshots_dir=SNAPSHOTS):
             "d3_observed":len(d3),"d3_positive":sum(x>0 for x in d3),
             "d3_avg_pct":round(sum(d3)/len(d3),3) if d3 else None,
             "no_actual_trades_logged":True,
+            "retrospective_frozen_rows_excluded":len(retrospective),
         },
+        "retrospective_records":retrospective,
         "records":results,
     }
 
