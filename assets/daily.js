@@ -10,6 +10,9 @@ const st=v=>v==="original"?"全文":v==="summary"?"摘要":"仅行情";
 function clearPlugins(){
  const board=document.querySelector(".pickboard");if(board)board.hidden=true;
  const fold=document.querySelector(".market-fold");if(fold)fold.open=false;
+ const digest=document.querySelector(".read-digest");if(digest)digest.hidden=true;
+ const jumps=document.querySelector(".read-jump");if(jumps)jumps.hidden=true;
+ const tooltip=document.querySelector(".term-panel");if(tooltip)tooltip.hidden=true;
 }
 function applyPlugins(item,md=""){
  window.RadarCurrentReport={date:item.date,status:item.status,markdown:md};
