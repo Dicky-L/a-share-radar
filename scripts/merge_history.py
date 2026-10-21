@@ -26,6 +26,7 @@ def merge(paths,source_path=DATA/"snapshots/2026-10-20.json",shards=8):
         raise ValueError("Missing verified dated universe")
     universe={str(x["code"]):str(x["name"]) for x in authoritative["stocks"]}
     records=defaultdict(dict)
+    code_shard={code:i%shards for i,code in enumerate(sorted(universe))}
     calendars=[]
     pieces=[]
     seen=set()
@@ -45,7 +46,7 @@ def merge(paths,source_path=DATA/"snapshots/2026-10-20.json",shards=8):
             day,code=row.get("date"),str(row.get("code",""))
             if day not in days or code not in universe:
                 raise ValueError("Unknown day/ticker")
-            if sorted(universe).index(code)%shards!=shard:
+            if code_shard[code]!=shard:
                 raise ValueError("Ticker in wrong shard")
             if code in records[day]:
                 raise ValueError("Duplicated bar "+day+" "+code)
