@@ -7,6 +7,7 @@ on:
       - assets/**
       - market.html
       - performance.html
+      - monthly.html
       - reports/**
       - tests/**
       - scripts/build_report_index.py
