@@ -102,6 +102,29 @@ class CandidateArchiveTest(unittest.TestCase):
         self.assertTrue(all(x["report_status"]=="summary" for x in retrospective+actual_14+actual_16))
 
 
+    def test_oct20_original_prose_candidate_and_oct21_bpool(self):
+        archive = build(Path(__file__).resolve().parents[1] / "reports")
+        rows = archive["records"]
+        oct20 = [r for r in rows if r["date"]=="2026-10-20" and r["role"]=="watchlist"]
+        oct21 = [r for r in rows if r["date"]=="2026-10-21" and r["role"]=="watchlist"]
+        self.assertEqual({r["code"] for r in oct20}, {"600183"})
+        self.assertEqual({r["code"] for r in oct21}, {"600183","002463","002436"})
+        self.assertTrue(all(r["pool"]=="B" for r in oct20+oct21))
+        self.assertIn("113.50", oct20[0]["invalidation"])
+        self.assertIn("125.28", oct20[0]["exit_plan"])
+        for r in oct21:
+            self.assertTrue(r["entry_trigger"])
+            self.assertTrue(r["invalidation"])
+            self.assertTrue(r["exit_plan"])
+            self.assertEqual(r["report_status"],"summary")
+
+    def test_october_archival_coverage_and_no_fake_first_week(self):
+        archive = build(Path(__file__).resolve().parents[1] / "reports")
+        dates = {r["date"] for r in archive["records"]}
+        self.assertTrue({"2026-10-13","2026-10-14","2026-10-15","2026-10-16",
+                         "2026-10-17","2026-10-18","2026-10-19","2026-10-20","2026-10-21"} <= dates)
+        self.assertFalse(any(d<"2026-10-13" for d in dates))
+
 
 if __name__=="__main__":
     unittest.main()
