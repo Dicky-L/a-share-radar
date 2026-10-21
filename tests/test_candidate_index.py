@@ -72,6 +72,19 @@ class CandidateArchiveTest(unittest.TestCase):
             self.assertEqual(len(archive["records"]), 1)
             self.assertEqual(archive["records"][0]["report_status"], "summary")
 
+    def test_recovered_2026_10_19_china_nuclear_has_real_conditions(self):
+        archive = build(Path(__file__).resolve().parents[1] / "reports")
+        matched = [r for r in archive["records"] if r["date"] == "2026-10-19"
+                   and r["code"] == "601985" and r["role"] == "watchlist"]
+        self.assertEqual(len(matched), 1)
+        item = matched[0]
+        self.assertIn("9.58", item["entry_trigger"])
+        self.assertIn("9.34", item["invalidation"])
+        self.assertIn("10.06", item["exit_plan"])
+        self.assertEqual(item["report_status"], "summary")
+        self.assertIn("历史", item["supplement_source"])
+
+
 
 if __name__=="__main__":
     unittest.main()
