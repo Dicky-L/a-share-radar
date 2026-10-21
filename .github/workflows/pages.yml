@@ -8,6 +8,7 @@ on:
       - market.html
       - performance.html
       - reports/**
+      - tests/**
       - scripts/build_report_index.py
       - scripts/build_candidate_index.py
       - scripts/build_performance.py
