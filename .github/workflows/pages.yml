@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Verify report reader JavaScript syntax
-        run: node --check assets/reading.js && node --check assets/charts.js && node --check assets/pickboard.js
+        run: node --check assets/reading.js && node --check assets/charts.js && node --check assets/pickboard.js && node --check assets/daily.js
       - name: Test stock-selection archive
         run: python3 -m unittest discover -s tests -p 'test_candidate_index.py' -v
       - name: Build searchable archive index
