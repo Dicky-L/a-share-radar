@@ -1,0 +1,126 @@
+name: One-month historical backfill (verified real data)
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/backfill-month.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backfill-month-a-share
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    # Trigger only once on deliberate initialization commit, or on manual dispatch.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[run-month-backfill]')
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        shard: [0,1,2,3,4,5,6,7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install BaoStock history client
+        run: python -m pip install 'baostock>=0.8.9,<1'
+      - name: Run offline history quality tests
+        run: python -m unittest discover -s tests -p 'test_backfill_history.py' -v
+      - name: Fetch September 21 to October 20 from verified history API
+        run: >
+          python scripts/backfill_history_shard.py
+          --start 2026-09-21 --end 2026-10-20
+          --shard ${{ matrix.shard }} --shards 8
+          --output "artifacts/part-${{ matrix.shard }}.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: real-history-shard-${{ matrix.shard }}
+          path: artifacts/part-*.json
+          if-no-files-found: error
+          retention-days: 3
+
+  merge:
+    name: Validate all shards, preserve October 20 original, commit prior days
+    needs: fetch
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    outputs:
+      updated: ${{ steps.commit.outputs.updated }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: real-history-shard-*
+          path: artifacts
+          merge-multiple: true
+      - name: Offline schema/coverage tests
+        run: python -m unittest discover -s tests -p 'test_backfill_history.py' -v
+      - name: Validate and create day snapshots (same schema as October 20)
+        run: python scripts/merge_history.py --parts artifacts --shards 8
+      - name: Commit historical data after validation
+        id: commit
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/
+          if git diff --staged --quiet; then
+            echo "updated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "data: archive one month of verified unadjusted market snapshots"
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:main; then
+              echo "updated=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            git pull --rebase origin main
+            sleep "$attempt"
+          done
+          echo "Failed to safely commit historical snapshots." >&2
+          exit 1
+
+  deploy:
+    name: Deploy daily history to Pages
+    needs: merge
+    if: needs.merge.outputs.updated == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Verify scripts
+        run: node --check assets/pickboard.js && node --check assets/charts.js && node --check assets/reading.js
+      - name: Rebuild searchable report and stock-selection indexes
+        run: |
+          python scripts/build_report_index.py
+          python scripts/build_candidate_index.py
+          python scripts/build_chart_data.py
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - uses: actions/deploy-pages@v4
+        id: deploy
