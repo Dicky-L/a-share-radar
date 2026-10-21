@@ -52,7 +52,9 @@ function stock(row){
 function render(){
  const month=$("month").value,year=Number(month.slice(0,4)),mo=Number(month.slice(5,7));
  if(!/^\d{4}-\d{2}$/.test(month)||mo<1||mo>12)return;
- const max=new Date(Date.UTC(year,mo,0)).getUTCDate();
+ const calendarMax=new Date(Date.UTC(year,mo,0)).getUTCDate();
+ const knownDays=[...archives.map(x=>x.date),...dates].filter(d=>d.startsWith(month)).map(d=>Number(d.slice(-2)));
+ const max=knownDays.length?Math.min(calendarMax,Math.max(...knownDays)):calendarMax;
  const applicable=candidates.filter(r=>r.date.startsWith(month)&&r.role==="watchlist");
  const reviews=candidates.filter(r=>r.date.startsWith(month)&&r.role==="historical_review");
  const reportDates=archives.filter(r=>r.date.startsWith(month));
@@ -67,7 +69,7 @@ function render(){
    const rows=applicable.filter(r=>r.date===date);
    const ret=reviews.filter(r=>r.date===date);
    const isRetraced=ret.length&&!rows.length;
-   const status=report?(report.status==="original"?"完整归档":"报告摘要"):"无选股报告";
+   const status=isRetraced?"事后追溯（非实发）":report?(report.status==="original"?"完整归档":"报告摘要"):"无选股报告";
    let cls=report?.status==="original"?"full":!report?"missing":isRetraced?"retro":"";
    let body="";
    if(rows.length)body+='<div>'+rows.map(stock).join("")+'</div>';
@@ -77,7 +79,7 @@ function render(){
    if(report)body+='<div class="links"><a href="./?date='+encodeURIComponent(date)+'">打开当期报告 ↗</a><a href="./performance.html?date='+encodeURIComponent(date)+'">查看后续股价变化 ↗</a></div>';
    else if(dates.includes(date))body+='<div class="links"><a href="./?date='+encodeURIComponent(date)+'">查看当日真实行情（仅行情） ↗</a></div>';
    let desc=rows.length?rows.map(r=>r.name+(r.pool?" "+r.pool+"池":"")).join("、"):(isRetraced?"追溯记录"+ret.length+"只":(dates.includes(date)?"仅行情数据":"无可核实当期候选"));
-   const open=query===date||date===month+"-21";
+   const open=query===date||i===max;
    html+='<details class="day" '+(open?"open":"")+'><summary><strong>'+date+'</strong><span class="status '+cls+'">'+status+'</span><span class="brief">'+esc(desc)+'</span></summary><div class="day-body">'+body+'</div></details>';
  }
  $("days").innerHTML=html||'<p>本月尚无归档。</p>';
