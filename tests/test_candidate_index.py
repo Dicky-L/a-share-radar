@@ -85,6 +85,23 @@ class CandidateArchiveTest(unittest.TestCase):
         self.assertIn("历史", item["supplement_source"])
 
 
+    def test_pre_oct17_archive_provenance_and_roles(self):
+        archive = build(Path(__file__).resolve().parents[1] / "reports")
+        entries = archive["records"]
+        retrospective = [x for x in entries if x["date"]=="2026-10-13"
+                         and x["role"]=="historical_review"]
+        actual_14 = [x for x in entries if x["date"]=="2026-10-14"
+                     and x["role"]=="watchlist"]
+        actual_16 = [x for x in entries if x["date"]=="2026-10-16"
+                     and x["role"]=="watchlist"]
+        self.assertEqual(len(retrospective), 10)
+        self.assertEqual(len(actual_14), 10)
+        self.assertEqual({x["pool"] for x in actual_14}, {None})
+        self.assertEqual({x["code"] for x in actual_16}, {"601985", "003816", "600886"})
+        self.assertTrue(all(x["pool"]=="B" for x in actual_16))
+        self.assertTrue(all(x["report_status"]=="summary" for x in retrospective+actual_14+actual_16))
+
+
 
 if __name__=="__main__":
     unittest.main()
