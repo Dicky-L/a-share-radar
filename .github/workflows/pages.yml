@@ -11,6 +11,7 @@ on:
       - reports/**
       - tests/**
       - scripts/build_report_index.py
+      - scripts/check_daily_publication.py
       - scripts/build_candidate_index.py
       - scripts/build_performance.py
       - scripts/build_chart_data.py
@@ -36,6 +37,8 @@ jobs:
         run: node --check assets/reading.js && node --check assets/charts.js && node --check assets/pickboard.js && node --check assets/daily.js && node --check assets/pool-guide.js
       - name: Test stock-selection archive
         run: python3 -m unittest discover -s tests -p 'test_candidate_index.py' -v
+      - name: Test daily primary report publication contract
+        run: python3 -m unittest discover -s tests -p 'test_daily_publication.py' -v
       - name: Build searchable archive index
         run: python3 scripts/build_report_index.py
       - name: Test market chart data validation
