@@ -189,6 +189,7 @@ async function init(){
  initFilters();
  $("list").onclick=e=>{const node=e.target.closest("[data-date]");if(node)openDate(node.dataset.date)};
  $("today-open").hidden=true;
+ $("today-refresh").onclick=()=>location.reload();
  $("search").oninput=list;$("month").onchange=list;
  $("reset").onclick=()=>{$("search").value="";$("month").value="";archiveFilter="all";
     document.querySelectorAll(".arc-filter button").forEach(x=>x.classList.toggle("active",x.dataset.kind==="all"));list()};
