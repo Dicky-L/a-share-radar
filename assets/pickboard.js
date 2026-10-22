@@ -179,7 +179,9 @@ function setup(){
  const reader=document.querySelector(".reader"),content=document.getElementById("content");
  if(!reader||!content)return;
  host=make("section","pickboard");host.setAttribute("aria-label","本期选股观察记录");
+ const explainer=make("div");explainer.dataset.poolGuide="";host.append(explainer);
  body=make("div","pickbody");host.append(body);
+ window.RadarPoolGuide?.mount?.(explainer);
  const market=reader.querySelector(".market-fold");
  if(market)reader.insertBefore(host,market);else reader.insertBefore(host,reader.querySelector(".radar-viz")||content);
  if(window.RadarCurrentReport)render(window.RadarCurrentReport);
