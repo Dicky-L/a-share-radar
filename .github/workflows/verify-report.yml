@@ -1,0 +1,21 @@
+name: Verify today's 18:00 radar report is published
+on:
+  schedule:
+    # 18:45 Beijing = 10:45 UTC. GitHub cron may be delayed.
+    - cron: '45 10 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify full report exists for Beijing date
+        env:
+          TZ: Asia/Shanghai
+        run: python scripts/check_daily_publication.py
