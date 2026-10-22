@@ -1,0 +1,31 @@
+/* Daily operating console: website is the primary report delivery surface. */
+.today-shell{max-width:1350px;margin:0 auto;padding:0 22px 20px}
+.today-bar{background:linear-gradient(110deg,#183354,#172a45);border:1px solid #426084;border-radius:15px;padding:17px 21px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+.today-bar h2{margin:4px 0 7px;font-size:clamp(18px,2.5vw,23px);font-weight:760;line-height:1.4;color:#eff6ff}
+.today-eyebrow{font-size:11px;color:#9fbfe6;letter-spacing:.11em;font-weight:800}
+.today-bar p{font-size:13px;line-height:1.75;color:#c2d4ec;margin:0}
+.today-actions{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.today-actions button,.today-actions a{font:inherit;display:inline-block;font-size:12px;padding:10px 13px;border-radius:9px;border:1px solid #5481b3;background:#23446a;color:#fff;cursor:pointer;text-decoration:none}
+.today-actions button:hover,.today-actions a:hover{background:#325782}
+.today-bar.state-ready{border-color:#428e84;background:linear-gradient(110deg,#193c42,#1a344b)}
+.today-bar.state-ready .today-eyebrow{color:#9ce2c9}
+.today-bar.state-summary{border-color:#988653}
+.today-bar.state-missing{border-color:#79654e}
+.today-bar .today-tag{display:inline-block;border:1px solid #7083a2;padding:2px 9px;margin-left:9px;color:#d9e8ff;border-radius:99px;font-size:11px;vertical-align:2px}
+.today-explain{margin:11px 2px 0;font-size:12px;color:#94a9c4}
+.today-reader-note{border:1px solid #3d5574;background:#1b304d;border-radius:8px;color:#c4daef;font-size:12px;line-height:1.7;margin:13px 28px 0;padding:10px 14px}
+.today-reader-note[hidden]{display:none}
+.today-bar a[hidden],.today-bar button[hidden]{display:none}
+:root[data-reader-theme="light"] .today-bar{background:linear-gradient(115deg,#e8f4ff,#f1f6fe);border-color:#c0d5e8;color:#214664}
+:root[data-reader-theme="light"] .today-bar h2{color:#163c5e}
+:root[data-reader-theme="light"] .today-bar p{color:#51728e}
+:root[data-reader-theme="light"] .today-eyebrow{color:#406f9a}
+:root[data-reader-theme="light"] .today-actions a,:root[data-reader-theme="light"] .today-actions button{color:#255581;border-color:#b0cce6;background:#fff}
+:root[data-reader-theme="light"] .today-tag{color:#496983;border-color:#b3c9df}
+:root[data-reader-theme="light"] .today-bar.state-ready{background:#e9f9f2;border-color:#a5d6c4}
+:root[data-reader-theme="light"] .today-bar.state-summary{border-color:#ebc681}
+:root[data-reader-theme="light"] .today-bar.state-missing{border-color:#e5c6a3}
+:root[data-reader-theme="light"] .today-explain{color:#647d97}
+:root[data-reader-theme="light"] .today-reader-note{border-color:#c4d7eb;background:#eaf4ff;color:#365777}
+@media(max-width:800px){.today-shell{padding:0 14px 14px}.today-bar{padding:15px}.today-actions{width:100%}.today-actions button,.today-actions a{flex:1;text-align:center}.today-reader-note{margin:12px 16px 0}}
+@media print{.today-shell,.today-reader-note{display:none}}
