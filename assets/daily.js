@@ -7,6 +7,39 @@ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const fmt=(v,places=2)=>typeof v==="number"&&Number.isFinite(v)?v.toLocaleString("zh-CN",{maximumFractionDigits:places}):"待核";
 let entries=[],selected=null,reportText="",rawPath="",archiveFilter="all",openSeq=0,loadWarnings=[];
 const st=v=>v==="original"?"全文":v==="summary"?"摘要":"仅行情";
+/* Always interpret 'today' in China Standard Time, not a visitor's device timezone. */
+const beijingToday=()=>{
+ const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Shanghai",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+ const get=key=>parts.find(x=>x.type===key)?.value||"";
+ return get("year")+"-"+get("month")+"-"+get("day");
+};
+function showTodayBanner(){
+ const bar=$("today-bar"),title=$("today-title"),message=$("today-message"),open=$("today-open");
+ if(!bar||!title||!message||!open)return;
+ const today=beijingToday(),todayReport=entries.find(x=>x.date===today&&["original","summary"].includes(x.status));
+ const latestReport=entries.find(x=>["original","summary"].includes(x.status));
+ bar.classList.remove("state-ready","state-summary","state-missing");
+ if(todayReport){
+   const full=todayReport.status==="original";
+   bar.classList.add(full?"state-ready":"state-summary");
+   title.textContent=today+" · "+(full?"完整选股报告已发布":"选股报告摘要已发布");
+   message.textContent=full?"今日全文已可阅读：A/B/C池、入选逻辑、买入验证、卖出计划、资金与历史复盘均以正文实际内容为准。":
+      "今日仅有摘要，尚未同步完整推送原文；未归档的分析和数据不能视为已发布。";
+   open.hidden=false;open.textContent="阅读今日"+(full?"完整报告":"已发布摘要");
+   open.onclick=()=>openDate(today);
+ }else{
+   bar.classList.add("state-missing");
+   title.textContent=today+" · 今天的选股报告尚未同步";
+   message.textContent=latestReport?
+      "网站最近一期选股报告为 "+latestReport.date+"（"+st(latestReport.status)+"）。可以先查阅旧报告，不能把它当作今天的推荐。":
+      "仓库尚无可阅读的选股报告；行情快照不能代替今日完整研究和买卖计划。";
+   open.hidden=!latestReport;
+   if(latestReport){
+     open.textContent="阅读最近一期 "+latestReport.date;
+     open.onclick=()=>openDate(latestReport.date);
+   }
+ }
+}
 function clearPlugins(){
  const board=document.querySelector(".pickboard");if(board)board.hidden=true;
  const fold=document.querySelector(".market-fold");if(fold)fold.open=false;
@@ -70,7 +103,7 @@ function marketCard(day,item){
    "<div id='arc-search-results' class='results'><p>请输入股票代码或名称，显示对应收盘价、涨跌幅和成交额。</p></div>";
  return panel;
 }
-async function openDate(day){
+async function openDate(day,options={}){
  const item=entries.find(e=>e.date===day);if(!item)return;
  const token=++openSeq;selected=item;list();
  $("title").textContent=item.title||("A股雷达 · "+day);
@@ -80,7 +113,7 @@ async function openDate(day){
  $("content").innerHTML="<div class='placeholder'>正在读取归档…</div>";
  actionState(false,false);
  reportText="";rawPath="";
- clearPlugins();rememberDate(day);
+ clearPlugins();if(!options.keepUrl)rememberDate(day);
  if(item.status==="market_only"){
    $("title").textContent=day+" · 已归档市场行情（选股日报缺失）";
    $("content").replaceChildren(marketCard(day,item));
@@ -155,6 +188,7 @@ function initFilters(){
 async function init(){
  initFilters();
  $("list").onclick=e=>{const node=e.target.closest("[data-date]");if(node)openDate(node.dataset.date)};
+ $("today-open").hidden=true;
  $("search").oninput=list;$("month").onchange=list;
  $("reset").onclick=()=>{$("search").value="";$("month").value="";archiveFilter="all";
     document.querySelectorAll(".arc-filter button").forEach(x=>x.classList.toggle("active",x.dataset.kind==="all"));list()};
@@ -185,18 +219,24 @@ async function init(){
        market:true,source:"经校验的历史行情快照",search_text:"行情 收盘价 涨跌幅 成交额 股票 历史"});
    }
    entries=[...map.values()].sort((a,b)=>b.date.localeCompare(a.date));
-   list();
+   list();showTodayBanner();
    if(!entries.length)throw Error("没有可用的报告与行情日期索引；"+loadWarnings.join("; "));
    const requested=new URLSearchParams(location.search).get("date");
-   await openDate(entries.find(x=>x.date===requested)?.date||entries[0].date);
+   // With a bare homepage URL, do not silently lock tomorrow's visit to an older date.
+   // Prefer today's complete report; otherwise show newest real report, not a market-only snapshot.
+   const latestReport=entries.find(x=>x.status==="original"||x.status==="summary");
+   const preferred=entries.find(x=>x.date===beijingToday()&&x.status!=="market_only")||latestReport||entries[0];
+   const chosen=entries.find(x=>x.date===requested)||preferred;
+   await openDate(chosen.date,{keepUrl:!requested});
    if(loadWarnings.length){
      const info=document.createElement("p");info.className="date-hint";
      info.textContent="部分历史索引读取失败，当前仅显示成功加载的数据。";
      document.querySelector(".sidehead")?.append(info);
    }
  }catch(e){
-   $("title").textContent="历史数据尚未就绪";
-   $("content").textContent="归档目录读取失败："+e.message;
+   $("title").textContent="今日报告暂时不可用";
+   $("content").textContent="报告或历史数据索引读取失败："+e.message;
+   showTodayBanner();
  }
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});
