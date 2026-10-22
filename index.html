@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>A股启动与卖出雷达｜日报档案</title>
+<title>A股启动与卖出雷达｜今日选股报告</title>
 <style>
 :root{color-scheme:dark;font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;background:#0a1220;color:#e9f0fc}*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#091321,#132039);min-height:100vh}a{color:#93c4ff}button,input{font:inherit}button{cursor:pointer}
 header{padding:28px 22px;max-width:1350px;margin:auto;display:flex;gap:20px;align-items:center;justify-content:space-between}header h1{margin:4px 0;font-size:clamp(22px,3vw,30px)}header p{margin:5px 0;color:#9aacc6;font-size:13px}.eyebrow{font-size:11px;letter-spacing:.14em;color:#88a3c6;font-weight:750}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{color:#d2e1f7;text-decoration:none;background:#1c2d47;border:1px solid #39506e;border-radius:9px;padding:10px;font-size:12px}
@@ -14,8 +14,16 @@ main{max-width:1350px;margin:auto;padding:0 22px 50px;display:grid;grid-template
 <link rel="stylesheet" href="./assets/pickboard.css">
 <link rel="stylesheet" href="./assets/pool-guide.css">
 <link rel="stylesheet" href="./assets/daily.css">
-<header><div><div class="eyebrow">DAILY RADAR REPORTS</div><h1>A股启动与卖出雷达</h1><p>选股决策优先 · A/B/C观察池 · 买入验证与卖出管理 · 历史复盘</p></div><nav class="nav"><a href="./monthly.html">本月选股与卖出计划 ↗</a><a href="./performance.html">选股绩效总览 ↗</a><a href="./market.html">历史行情查询 ↗</a><a href="https://github.com/Dicky-L/a-share-radar/tree/main/reports">GitHub 报告源 ↗</a></nav></header>
-<main><aside class="side"><div class="sidehead"><strong>日报与行情历史 <span id="count" class="subtle"></span></strong><input id="search" type="search" placeholder="搜索股票、板块、日期和报告内容" aria-label="搜索日报"/><div class="filter"><input id="month" type="month" aria-label="按月筛选"/><button id="reset">清除</button></div><p class="subtle">左侧同时展示选股报告与历史行情。没有报告的日期会标注“仅行情”，不伪造当期推荐。</p></div><div id="list" class="list"></div></aside>
+<link rel="stylesheet" href="./assets/today.css">
+<header><div><div class="eyebrow">DAILY STOCK SELECTION · REPORT CENTER</div><h1>A股启动与卖出雷达</h1><p>每天18:00更新完整选股报告 · 买入验证与卖出计划 · 真实历史复盘</p></div><nav class="nav"><a href="./monthly.html">本月选股与卖出计划 ↗</a><a href="./performance.html">选股绩效总览 ↗</a><a href="./market.html">历史行情查询 ↗</a><a href="https://github.com/Dicky-L/a-share-radar/tree/main/reports">GitHub 报告源 ↗</a></nav></header>
+<section class="today-shell" aria-label="今日雷达报告状态">
+ <div class="today-bar state-missing" id="today-bar" role="status" aria-live="polite">
+  <div><div class="today-eyebrow">TODAY · 今日选股研报</div><h2 id="today-title">正在核对今日完整报告…</h2><p id="today-message">今天的报告以网站的真实发布日期和原文状态为准。</p></div>
+  <div class="today-actions"><button id="today-open" type="button" hidden>阅读今日日报</button><a href="./performance.html">查看选股兑现 →</a></div>
+ </div>
+ <p class="today-explain">本站是每日选股报告的主要阅读入口。原文保持专业内容与完整数据；没有发布的日期会直接标明，不用旧数据冒充今天。</p>
+</section>
+<main><aside class="side"><div class="sidehead"><strong>日期 / 往期报告 <span id="count" class="subtle"></span></strong><input id="search" type="search" placeholder="搜索股票、板块、日期和报告内容" aria-label="搜索日报"/><div class="filter"><input id="month" type="month" aria-label="按月筛选"/><button id="reset">清除</button></div><p class="subtle">左侧同时展示选股报告与历史行情。没有报告的日期会标注“仅行情”，不伪造当期推荐。</p></div><div id="list" class="list"></div></aside>
 <article class="reader"><div class="readerhead"><div class="eyebrow">RESEARCH ARCHIVE</div><h2 id="title">加载报告中…</h2><div class="meta" id="meta"></div><div class="controls"><button disabled id="copy">复制正文</button><button disabled id="permalink">复制本篇链接</button><button disabled id="raw">查看原始 Markdown</button></div></div><div class="content" id="content"><div class="placeholder">读取归档中…</div></div></article></main>
 <footer>仅供研究，不构成投资建议。公开仓库请勿归档真实持仓成本、账户信息或其他敏感资料。ChatGPT 18:00推送与网站自动入库是两个独立环节。</footer>
 <script>
