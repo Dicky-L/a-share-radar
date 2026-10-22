@@ -28,11 +28,13 @@ header,main,footer{max-width:1280px;margin:auto;padding:23px 25px}header{display
 .error{color:#ac3939}footer{font-size:12px;color:#8698ac}
 @media(max-width:850px){header{display:block;padding:20px 14px}.nav{margin-top:15px}main{padding:4px 12px}.numbers{grid-template-columns:repeat(2,1fr)}.row{grid-template-columns:1fr;gap:9px}.values{grid-template-columns:1fr;gap:10px}.day summary{align-items:start}.day summary .brief{min-width:80%;order:5}}
 </style>
+<link rel="stylesheet" href="./assets/pool-guide.css">
 </head><body>
 <header><div><div class="eyebrow">MONTHLY SELECTION JOURNAL</div><h1>本月选股观察与卖出计划</h1><p class="description">每天的A/B/C池、买入验证、失效与退出条件一屏回顾 · 历史证据优先</p></div><nav class="nav"><a href="./">每日档案</a><a href="./performance.html">选股兑现追踪</a></nav></header>
 <main>
 <section class="panel"><div class="controls"><label for="month">选择月份：</label><input id="month" type="month" value="2026-10"/><span class="subtle">仅展示已归档的真实报告及已明确标记的追溯样本，不按历史涨跌重新创造建议。</span></div>
 <div class="numbers" id="counts"><div class="number">读取本月档案中…</div></div>
+<div data-pool-guide data-pool-guide-theme="light"></div>
 <div class="warning">**数据口径：** 买入触发、结构失效和卖出计划来自当期报告或有来源的历史补录；缺失则显示「原报告未核实」。本月追溯样本与真实18:00推送分开。卖出条件为当期风险纪律，不代表已执行交易、更不能保证盈利。</div>
 </section>
 <section class="panel"><h2>每日选股档案</h2><div id="days" class="month">正在加载…</div></section>
@@ -96,4 +98,5 @@ async function init(){
 }
 init();
 </script>
+<script src="./assets/pool-guide.js" defer></script>
 </body></html>
