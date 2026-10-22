@@ -1,0 +1,33 @@
+/* Explanatory guide for the radar's custom A/B/C watch pools. */
+.pool-guide{margin:14px 0 16px;padding:15px;border:1px solid #385779;border-radius:12px;background:#172e48;color:#e8f2ff}
+.pool-guide-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:11px}
+.pool-guide-title{font-size:14px;font-weight:750;margin:0;color:#edf6ff}
+.pool-guide-head small{font-size:11px;color:#a7bfd8}
+.pool-guide-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.pool-guide-card{background:#1b3753;border:1px solid #385776;border-radius:9px;padding:11px 12px;min-width:0}
+.pool-guide-card .name{display:block;font-weight:800;font-size:15px;margin-bottom:2px;color:#dceefe}
+.pool-guide-card .meaning{display:block;font-weight:650;font-size:12px;margin-bottom:7px;color:#b4d1ef}
+.pool-guide-card .explain{font-size:12px;line-height:1.65;margin:0;color:#c9dbef}
+.pool-guide-card .action{font-size:11px;line-height:1.6;margin:8px 0 0;color:#a3c3e1}
+.pool-guide .pool-A .name{color:#91cce7}
+.pool-guide .pool-B .name{color:#f1d09a}
+.pool-guide .pool-C .name{color:#e8adad}
+.pool-guide-details{margin-top:12px;font-size:12px;line-height:1.75;color:#c4d8ee}
+.pool-guide-details summary{cursor:pointer;padding:4px 0;color:#9bc6fa;font-weight:650}
+.pool-guide-details p{margin:7px 0}
+.pool-guide-note{font-size:11px;color:#9db6d2;margin:12px 0 0;line-height:1.65}
+:root[data-reader-theme="light"] .pool-guide,.pool-guide.pool-guide-light{background:#f4f8ff;border-color:#cfdeee;color:#24415e}
+:root[data-reader-theme="light"] .pool-guide-title,.pool-guide.pool-guide-light .pool-guide-title{color:#214666}
+:root[data-reader-theme="light"] .pool-guide-head small,.pool-guide.pool-guide-light .pool-guide-head small{color:#617e9a}
+:root[data-reader-theme="light"] .pool-guide-card,.pool-guide.pool-guide-light .pool-guide-card{background:#fff;border-color:#d6e3f0}
+:root[data-reader-theme="light"] .pool-guide-card .explain,.pool-guide.pool-guide-light .pool-guide-card .explain{color:#415e79}
+:root[data-reader-theme="light"] .pool-guide-card .meaning,.pool-guide.pool-guide-light .pool-guide-card .meaning{color:#4e7395}
+:root[data-reader-theme="light"] .pool-guide-card .action,.pool-guide.pool-guide-light .pool-guide-card .action{color:#6b86a0}
+:root[data-reader-theme="light"] .pool-guide .pool-A .name,.pool-guide.pool-guide-light .pool-A .name{color:#2b799c}
+:root[data-reader-theme="light"] .pool-guide .pool-B .name,.pool-guide.pool-guide-light .pool-B .name{color:#99641b}
+:root[data-reader-theme="light"] .pool-guide .pool-C .name,.pool-guide.pool-guide-light .pool-C .name{color:#a95754}
+:root[data-reader-theme="light"] .pool-guide-details,.pool-guide.pool-guide-light .pool-guide-details{color:#4f708e}
+:root[data-reader-theme="light"] .pool-guide-details summary,.pool-guide.pool-guide-light .pool-guide-details summary{color:#296ea3}
+:root[data-reader-theme="light"] .pool-guide-note,.pool-guide.pool-guide-light .pool-guide-note{color:#68839f}
+@media(max-width:650px){.pool-guide{padding:12px}.pool-guide-grid{grid-template-columns:1fr;gap:7px}.pool-guide-card{padding:10px 12px}.pool-guide-card .name{display:inline;margin-right:9px}.pool-guide-card .meaning{display:inline}.pool-guide-card .explain{margin-top:5px}.pool-guide-card .action{margin-top:4px}}
+@media print{.pool-guide-details:not([open]){display:none}}
