@@ -82,7 +82,13 @@ def build(candidates_path=CANDIDATES,index_path=INDEX,snapshots_dir=SNAPSHOTS):
         quotes[day]=dayquotes
         coverage[day]={"stocks":len(dayquotes),"source":[x.get("provider") for x in doc.get("data_sources",[])],
                        "quality_status":doc.get("quality",{}).get("status")}
-    signals=[x for x in candidates.get("records",[]) if x.get("role")=="watchlist"]
+    # A later reconstruction dated as the past is a research simulation, NOT
+    # a recommendation that truly existed before its publication. Exclude it
+    # from scheduled-pick metrics and label separately.
+    reconstructed=[x for x in candidates.get("records",[])
+                   if x.get("role")=="watchlist" and x.get("report_type")=="historical_reconstruction"]
+    signals=[x for x in candidates.get("records",[])
+             if x.get("role")=="watchlist" and x.get("report_type")!="historical_reconstruction"]
     results=[evaluate_signal(x,dates,quotes) for x in signals]
     # Date-bucket retroactive freeze lists must never contribute to historical
     # actual-report selection metrics (the Oct-13 task did not actually run).
@@ -91,6 +97,12 @@ def build(candidates_path=CANDIDATES,index_path=INDEX,snapshots_dir=SNAPSHOTS):
     retrospective=[evaluate_signal(x,dates,quotes) for x in retro]
     for item in retrospective:
         item["classification"]="retrospective_frozen_batch_not_actual_report"
+    rebuilt=[evaluate_signal(x,dates,quotes) for x in reconstructed]
+    for item in rebuilt:
+        item["classification"]="later_reconstruction_not_original_scheduled_push"
+        item["reconstructed_at"]=next((x.get("reconstructed_at") for x in reconstructed
+                                       if x.get("date")==item["date"] and x.get("code")==item["code"]),None)
+    retrospective += rebuilt
     d1=[r["checkpoints"]["d1"]["return_pct"] for r in results if r["checkpoints"]["d1"] and r["checkpoints"]["d1"]["return_pct"] is not None]
     d3=[r["checkpoints"]["d3"]["return_pct"] for r in results if r["checkpoints"]["d3"] and r["checkpoints"]["d3"]["return_pct"] is not None]
     return {
@@ -108,7 +120,8 @@ def build(candidates_path=CANDIDATES,index_path=INDEX,snapshots_dir=SNAPSHOTS):
             "d3_observed":len(d3),"d3_positive":sum(x>0 for x in d3),
             "d3_avg_pct":round(sum(d3)/len(d3),3) if d3 else None,
             "no_actual_trades_logged":True,
-            "retrospective_frozen_rows_excluded":len(retrospective),
+            "retrospective_frozen_rows_excluded":len(retro),
+            "reconstructed_rows_excluded":len(reconstructed),
         },
         "retrospective_records":retrospective,
         "records":results,
