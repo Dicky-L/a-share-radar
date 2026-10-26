@@ -15,6 +15,7 @@ main{max-width:1350px;margin:auto;padding:0 22px 50px;display:grid;grid-template
 <link rel="stylesheet" href="./assets/pool-guide.css">
 <link rel="stylesheet" href="./assets/daily.css">
 <link rel="stylesheet" href="./assets/today.css">
+<link rel="stylesheet" href="./assets/rolling.css">
 <header><div><div class="eyebrow">DAILY STOCK SELECTION · REPORT CENTER</div><h1>A股启动与卖出雷达</h1><p>每天18:00更新完整选股报告 · 买入验证与卖出计划 · 真实历史复盘</p></div><nav class="nav"><a href="./monthly.html">本月选股与卖出计划 ↗</a><a href="./performance.html">选股绩效总览 ↗</a><a href="./market.html">历史行情查询 ↗</a><a href="https://github.com/Dicky-L/a-share-radar/tree/main/reports">GitHub 报告源 ↗</a></nav></header>
 <section class="today-shell" aria-label="今日雷达报告状态">
  <div class="today-bar state-missing" id="today-bar" role="status" aria-live="polite">
@@ -22,6 +23,14 @@ main{max-width:1350px;margin:auto;padding:0 22px 50px;display:grid;grid-template
   <div class="today-actions"><button id="today-open" type="button" hidden>阅读今日日报</button><button id="today-refresh" type="button">检查最新报告 ↻</button><a href="./performance.html">查看选股兑现 →</a></div>
  </div>
  <p class="today-explain">本站是每日选股报告的主要阅读入口。原文保持专业内容与完整数据；没有发布的日期会直接标明，不用旧数据冒充今天。</p>
+</section>
+<section class="rolling-shell" aria-label="曾推荐股票持续跟踪">
+ <div class="rolling-panel">
+  <div class="rolling-head"><div><div class="rolling-kicker">PREVIOUS STOCK PICKS · 历史推荐透明追踪</div><h2>之前推荐的股票 · 持续跟踪</h2><p>保留每次真实归档的当期候选、原始买入验证和退出计划。历史B池不是今日买入建议，涨幅也不等于已实现盈利。</p></div><div class="rolling-count" id="rolling-count">读取历史推荐…</div></div>
+  <div class="rolling-controls"><input id="rolling-search" type="search" placeholder="查历史推荐股票名称/代码" aria-label="检索前期推荐股票"/><button id="rolling-toggle" type="button" hidden>显示全部</button><a href="./performance.html">查看完整绩效总览 ↗</a></div>
+  <div class="rolling-grid" id="rolling-grid"><div class="rolling-alert">加载历史选股记录及后续核验数据…</div></div>
+  <p class="rolling-legal" id="rolling-note">仅查询已归档候选；后续收盘变动不是实际交易净收益，股票未重新触发条件前不能视为当前有效建议。</p>
+ </div>
 </section>
 <main><aside class="side"><div class="sidehead"><strong>日期 / 往期报告 <span id="count" class="subtle"></span></strong><input id="search" type="search" placeholder="搜索股票、板块、日期和报告内容" aria-label="搜索日报"/><div class="filter"><input id="month" type="month" aria-label="按月筛选"/><button id="reset">清除</button></div><p class="subtle">左侧同时展示选股报告与历史行情。没有报告的日期会标注“仅行情”，不伪造当期推荐。</p></div><div id="list" class="list"></div></aside>
 <article class="reader"><div class="readerhead"><div class="eyebrow">RESEARCH ARCHIVE</div><h2 id="title">加载报告中…</h2><div class="meta" id="meta"></div><div class="controls"><button disabled id="copy">复制正文</button><button disabled id="permalink">复制本篇链接</button><button disabled id="raw">查看原始 Markdown</button></div></div><div class="content" id="content"><div class="placeholder">读取归档中…</div></div></article></main>
@@ -58,4 +67,5 @@ function renderMarkdown(src){
 <script src="./assets/pickboard.js" defer></script>
 <script src="./assets/pool-guide.js" defer></script>
 <script src="./assets/daily.js" defer></script>
+<script src="./assets/rolling.js" defer></script>
 </html>
