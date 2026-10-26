@@ -43,6 +43,8 @@ def parse_markdown(path: Path):
         "title": title,
         "preview": preview,
         "status": meta["status"],
+        "report_type": meta.get("report_type", "dated_report_archive"),
+        "reconstructed_at": meta.get("reconstructed_at"),
         "source": meta.get("source", "日报归档"),
         "file": "./reports/" + path.name,
         "search_text": (title + " " + preview + " " + body)[:40000],
