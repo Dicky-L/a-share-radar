@@ -1,12 +1,13 @@
 """Deterministic synthetic checks. NO fixture values are published as quotes."""
 import copy
 import json
+import hashlib
 import tempfile
 import unittest
 from pathlib import Path
 
 from scripts.replay_asof import (
-    POLICY_ID, build, freeze_selections, load_snapshot, screen,
+    POLICY_ID, build, checked_frozen, freeze_selections, load_snapshot, screen,
 )
 
 
@@ -40,6 +41,20 @@ class StrictPointInTimeTest(unittest.TestCase):
                 raise AssertionError("FUTURE ACCESS BY SELECTOR")
             return copy.deepcopy(self.maps[day])
         self.fixture=fixture
+
+    def test_frozen_baseline_hash_does_not_permit_silent_rewrites(self):
+        selected=freeze_selections(self.days,end="2026-10-20",loader=self.fixture)
+        content=json.dumps(selected,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode("utf-8")
+        frozen={
+            "schema_version":1,"policy_id":POLICY_ID,"selection_end":"2026-10-20",
+            "selection_hash_sha256":hashlib.sha256(content).hexdigest(),
+            "selection":selected,
+        }
+        checked=checked_frozen(frozen,self.days,stop="2026-10-20")
+        self.assertEqual(checked,selected)
+        frozen["selection"][5]["signals"][0]["reference_close"]=9999
+        with self.assertRaisesRegex(ValueError,"Frozen selection content changed"):
+            checked_frozen(frozen,self.days,stop="2026-10-20")
 
     def test_future_access_is_blocked_by_reader(self):
         with self.assertRaisesRegex(ValueError,"LOOKAHEAD BLOCKED"):
