@@ -97,6 +97,10 @@ function showCurrent(){
  const count=make("div","pick-count");
  count.append(make("strong","",watched.length),make("small","","只明确入选观察表的股票"));
  head.append(intro,count);body.append(head);
+ if(rows.some(r=>r.report_type==="historical_reconstruction")){
+   body.append(make("div","pick-notice",
+     "来源校验：这是后来按历史截面补写的研究方案，并不是该日期18:00真正推送的股票名单。可用于研究和后续观察，但不可计入当日原始推荐胜率。"));
+ }
  const performance=make("div","pick-links");
  const monthly=make("a","","按月份查看全部候选与卖出计划 →");
  monthly.href="./monthly.html";
@@ -104,7 +108,7 @@ function showCurrent(){
  const perf=make("a","","查看全部股票的推荐兑现与走势总览 →");
  perf.href="./performance.html";
  performance.append(perf);body.append(performance);
- body.append(make("div","pick-meta","归档发布日期："+selection.date+"　·　"+(selection.status==="summary"?"来源：历史摘要（不是原始完整推送）":"来源：当期已归档原文")));
+ body.append(make("div","pick-meta","归档发布日期："+selection.date+"　·　"+(rows.some(r=>r.report_type==="historical_reconstruction")?"来源：事后历史截面重建（非当天实际推送）":selection.status==="summary"?"来源：历史摘要（不是原始完整推送）":"来源：当期已归档原文")));
  body.append(make("div","pick-notice",
    "阅读提示：所有股票均为当期观察记录，非本人真实持仓，也不表示现在仍可买入。条件缺失就展示缺失，不补编买点、止损或盈利回测。"));
  if(watched.length){
