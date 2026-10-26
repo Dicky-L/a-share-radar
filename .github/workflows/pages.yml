@@ -39,6 +39,10 @@ jobs:
         run: node --check assets/reading.js && node --check assets/charts.js && node --check assets/pickboard.js && node --check assets/daily.js && node --check assets/pool-guide.js && node --check assets/rolling.js
       - name: Test stock-selection archive
         run: python3 -m unittest discover -s tests -p 'test_candidate_index.py' -v
+      - name: Test strict point-in-time replay / anti-lookahead invariants
+        run: python3 -m unittest discover -s tests -p 'test_replay_asof.py' -v
+      - name: Build historical time-slice selections and independent future observations
+        run: python3 scripts/replay_asof.py --end 2026-10-22
       - name: Test daily primary report publication contract
         run: python3 -m unittest discover -s tests -p 'test_daily_publication.py' -v
       - name: Build searchable archive index
