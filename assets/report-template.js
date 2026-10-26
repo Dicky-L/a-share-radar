@@ -9,7 +9,7 @@ const LAYOUT=[
  {key:"selection",label:"本期选股结论",hint:"A/B/C池、方向、是否允许等待买入",rules:["选股结论","今日结论","本期结论","总体结论"]},
  {key:"market",label:"全市场资金总览",hint:"指数、两日成交额、涨跌家数与市场广度",rules:["全市场数据","市场资金总览","市场环境与风险","市场环境","市场概况","市场资金","市场总览"]},
  {key:"industry",label:"10个申万一级行业双日对照",hint:"同口径前日/当日主力净额、净额变化与方向",rules:["10个申万一级行业双日对照","申万一级行业主力净流向","申万一级行业","行业资金双日"]},
- {key:"funds",label:"资金关注度与产业解读",hint:"净额改善/转弱、板块主线、拥挤与催化",rules:["资金关注度变化","资金流向解读","资金与板块变化","产业线索","行业资金"]},
+ {key:"funds",label:"资金关注度与产业解读",hint:"净额改善/转弱、板块主线、拥挤与催化",rules:["资金关注度与产业解读","资金关注度变化","资金关注度","资金流向解读","资金与板块变化","产业线索","行业资金"]},
  {key:"plan",label:"本期选股观察与卖出计划",hint:"逐股入选依据、确认价、失效位、分批退出",rules:["本期选股观察与卖出计划","本期选股","选股观察与卖出","观察与卖出管理","观察候选","候选池","本期B池"]},
  {key:"review",label:"前期推荐与失败复盘",hint:"历史冻结样本、条件是否触发、D+1/D+3与失败记录",rules:["日前推荐股票复盘","日前推荐","前期推荐","历史冻结批次","历史样本复盘","历史复盘","候选跟踪","回测复盘","历史观察"]},
  {key:"risk",label:"仓位与卖出风险管理",hint:"未买入/实际持仓区别、T+1、跳空、费用及失效",rules:["卖出与风险管理","风险和退出","风险管理","风控与仓位","交易风险"]},
@@ -18,7 +18,7 @@ const LAYOUT=[
 ];
 const $=id=>document.getElementById(id);
 const el=(tag,cls,value)=>{let x=document.createElement(tag);if(cls)x.className=cls;if(value!==undefined)x.textContent=value;return x};
-const norm=s=>String(s||"").replace(/^[一二三四五六七八九十0-9]+[、.．]\s*/,"").replace(/[：:|｜\s（）()·【】]+/g,"").toLowerCase();
+const norm=s=>String(s||"").replace(/^[一二三四五六七八九十0-9]+\s*[、.．·-]\s*/,"").replace(/[：:|｜\s（）()·【】]+/g,"").toLowerCase();
 function match(name){
  const clean=norm(name);
  for(const group of LAYOUT){if(group.rules.some(rule=>clean.includes(norm(rule))))return group.key}
