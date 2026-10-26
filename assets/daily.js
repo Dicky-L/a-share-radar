@@ -7,6 +7,7 @@ const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const fmt=(v,places=2)=>typeof v==="number"&&Number.isFinite(v)?v.toLocaleString("zh-CN",{maximumFractionDigits:places}):"待核";
 let entries=[],selected=null,reportText="",rawPath="",archiveFilter="all",openSeq=0,loadWarnings=[];
 const st=v=>v==="original"?"全文":v==="summary"?"摘要":"仅行情";
+const labelFor=e=>e?.report_type==="historical_reconstruction"?"重建":st(e.status);
 /* Always interpret 'today' in China Standard Time, not a visitor's device timezone. */
 const beijingToday=()=>{
  const parts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Shanghai",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
@@ -108,7 +109,7 @@ async function openDate(day,options={}){
  const token=++openSeq;selected=item;list();
  $("title").textContent=item.title||("A股雷达 · "+day);
  $("meta").textContent=(item.status==="market_only"?"行情快照日期 ":"日报发布日期 ")+day+
-   " · "+st(item.status)+(item.market?" · 有当日行情快照":" · 无同日行情快照")+
+   " · "+labelFor(item)+(item.market?" · 有当日行情快照":" · 无同日行情快照")+
    (item.source?" · "+item.source:"");
  $("content").innerHTML="<div class='placeholder'>正在读取归档…</div>";
  actionState(false,false);
