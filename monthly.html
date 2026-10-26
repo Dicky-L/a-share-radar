@@ -71,9 +71,11 @@ function render(){
    const rows=applicable.filter(r=>r.date===date);
    const ret=reviews.filter(r=>r.date===date);
    const isRetraced=ret.length&&!rows.length;
-   const status=isRetraced?"事后追溯（非实发）":report?(report.status==="original"?"完整归档":"报告摘要"):"无选股报告";
-   let cls=report?.status==="original"?"full":!report?"missing":isRetraced?"retro":"";
+   const reconstructed=report?.report_type==="historical_reconstruction";
+   const status=isRetraced?"事后追溯（非实发）":reconstructed?"事后重建研究":report?(report.status==="original"?"完整归档":"报告摘要"):"无选股报告";
+   let cls=report?.status==="original"?"full":!report?"missing":isRetraced||reconstructed?"retro":"";
    let body="";
+   if(reconstructed)body+='<div class="warning">注意：本日的B池及买卖计划为后续按当时数据重新研究，未在当日18:00实际推送，不能计入历史原始推荐绩效。</div>';
    if(rows.length)body+='<div>'+rows.map(stock).join("")+'</div>';
    if(ret.length){body+='<details><summary style="padding:10px 0;color:#a16f2c">'+ret.length+'条后续复盘/追溯记录（不作为当天新增推荐）</summary>'+
      '<div>'+ret.map(stock).join("")+'</div></details>'}
