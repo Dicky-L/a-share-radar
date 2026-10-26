@@ -1,0 +1,67 @@
+name: Freeze point-in-time historical selection baseline
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/freeze-replay.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: replay-selection-freeze
+  cancel-in-progress: false
+jobs:
+  freeze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify anti-lookahead tests
+        run: python -m unittest discover -s tests -p 'test_replay_asof.py' -v
+      - name: Freeze first-run observed-only candidate list
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          from datetime import datetime,timezone
+          from pathlib import Path
+          from scripts.replay_asof import POLICY_ID, get_dates, freeze_selections
+
+          target=Path("replay/asof/frozen-selections.json")
+          if target.exists():
+              raise SystemExit("Already frozen. Refuse overwrite.")
+          dates=get_dates()
+          end="2026-10-22"
+          frozen=freeze_selections(dates,end=end)
+          canonical=json.dumps(frozen,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode("utf-8")
+          digest=hashlib.sha256(canonical).hexdigest()
+          target.parent.mkdir(parents=True,exist_ok=True)
+          doc={
+              "schema_version":1,
+              "policy_id":POLICY_ID,
+              "selection_end":end,
+              "frozen_at_utc":datetime.now(timezone.utc).isoformat(),
+              "selection_hash_sha256":digest,
+              "selection":frozen,
+              "note":"Frozen technical pre-screen reconstructed in October 2026; not true old 18:00 recommendations, and NOT the full L1–L4 strategy.",
+          }
+          target.write_text(json.dumps(doc,ensure_ascii=False,indent=2,allow_nan=False)+"\n",encoding="utf-8")
+          print("FROZEN:",len(frozen),"days,",sum(len(r["signals"]) for r in frozen),"signals, hash",digest)
+          PY
+      - name: Commit immutable-by-default baseline with explicit audit trail
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add replay/asof/frozen-selections.json
+          git commit -m "replay: freeze pre-Oct23 technical candidate baseline for future performance audit"
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+            sleep "$attempt"
+          done
+          exit 1
