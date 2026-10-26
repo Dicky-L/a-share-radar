@@ -1,0 +1,97 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>历史时间切片回放｜A股雷达</title>
+<style>
+:root{font:15px/1.65 -apple-system,BlinkMacSystemFont,system-ui,"PingFang SC","Microsoft YaHei",sans-serif;color:#1c3854;background:#f1f5fb}*{box-sizing:border-box}body{margin:0}
+header,main,footer{max-width:1280px;margin:auto;padding:20px 25px}header{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.eyebrow{color:#54799b;font-size:11px;font-weight:800;letter-spacing:.1em}h1{font-size:clamp(24px,3vw,33px);margin:4px 0 0;color:#1a3c59}h2{font-size:19px;margin-top:0}
+nav{display:flex;gap:7px;flex-wrap:wrap}nav a{display:inline-block;background:white;border:1px solid #cbd9e9;padding:9px 13px;border-radius:9px;color:#275d88;font-size:12px;text-decoration:none}
+.panel{background:white;border:1px solid #d0dded;border-radius:15px;padding:19px;margin:15px 0}
+.warning{border-left:3px solid #d0a45e;border-radius:7px;background:#fff7e9;color:#735a2d;padding:13px 16px;margin-bottom:17px;font-size:13px}
+.caption{color:#68839f;font-size:12px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:14px 0}
+.metric{border:1px solid #d9e3ef;background:#f7faff;border-radius:11px;padding:15px}.metric span{display:block;font-size:11px;color:#6886a4}.metric strong{display:block;font-size:23px;color:#234867;font-variant-numeric:tabular-nums}
+.toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+input,select{border:1px solid #c6d6e8;background:#fff;border-radius:9px;padding:10px 12px;font:inherit;color:#244763}
+table{border-collapse:collapse;width:100%;min-width:1000px;font-size:12px}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #e2eaf3;vertical-align:top}thead th{background:#f4f8fd;color:#607b96}
+.table-wrap{max-width:100%;overflow-x:auto}
+.pick{font-weight:750;font-size:14px}.code{display:block;color:#7389a0;font-size:11px}.sub{color:#6884a2;font-size:11px;max-width:240px}
+.pos{color:#d24747;font-weight:700}.neg{color:#168566;font-weight:700}.missing{color:#9aa9b7}
+.day{border:1px solid #dce6f2;border-radius:11px;padding:14px;margin:9px 0;background:#fbfdff}
+.day h3{font-size:16px;margin:0}.day small{color:#6f87a1}.pill{display:inline-block;margin-right:8px;color:#885e19;background:#fff0d1;font-size:11px;border-radius:20px;padding:3px 8px}
+details summary{cursor:pointer;color:#416d99;padding:6px 0}
+p{line-height:1.7}footer{color:#7088a0;font-size:12px}
+@media(max-width:800px){header,main,footer{padding:15px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:14px}}
+</style></head><body>
+<header><div><div class="eyebrow">POINT-IN-TIME / NO LOOKAHEAD</div><h1>历史时间切片回放</h1><div class="caption">选股时冻结信息，再独立评价后续走势 · 2026年9月21日—10月22日</div></div>
+<nav><a href="./">今日雷达</a><a href="./monthly.html">每月历史</a><a href="./performance.html">原始推荐绩效</a></nav></header>
+<main>
+<div class="warning">
+<strong>这不是原L1–L4策略的准确率。</strong> 当前历史仓库只具备约19个交易日个股收盘与成交额，没有完整20/60日价量、行业净额、时间戳可核的历史催化/财报及OHLC。为防未来数据作弊，先运行<strong>L1/L2可验证的技术子规则</strong>，所得B池仅为<strong>预筛观察</strong>，A池恒为空，不冒充当时已经真正推荐的股票。回放中的D+1/D+3上涨比例也不是可执行交易胜率或净利润。
+</div>
+<section class="panel"><h2>回放执行结果</h2><div id="metrics" class="metrics"><div class="metric">正在读取回放证据…</div></div>
+<p id="fingerprint" class="caption">冻结文件校验：读取中…</p>
+<details><summary>查看防止未来数据泄漏的约束</summary><p class="caption">每个日期d的选股函数只接收日期不晚于d的行情；对任何晚于d的文件访问会直接报错。先把候选与当期依据冻结并计算SHA-256，再在独立第二阶段读取未来价位计算D+1、D+3、D+5结果。把未来一天价格改成极端数值后，已冻结的候选及其哈希必须完全不变。回测预筛阈值是实验参数，未经过样本外验证，不代表完整投资策略。</p></details></section>
+<section class="panel"><h2>逐日冻结结果</h2><div class="toolbar">
+<select id="date-filter" aria-label="选择历史回放日期"><option value="all">全部交易日</option></select>
+<input id="stock-filter" type="search" placeholder="搜索代码 / 股票名称" aria-label="搜索回放股票"/>
+<label class="caption"><input type="checkbox" id="with-picks" checked/> 仅看有预筛候选的日期</label>
+</div><div id="daily" class="caption">读取逐日回放结果…</div></section>
+<section class="panel"><h2>全部技术预筛信号与D+1 / D+3核验</h2><div id="grid" class="table-wrap">读取结果中…</div>
+<p class="caption">D+N = 当期收盘基准到后面第N个交易日收盘的涨跌；不等于通过触发条件买入、也没有复权分红和真实退出模拟。同一股票跨日重复出现可能造成统计相关，不可直接把上涨比例称为策略赚钱的概率。</p></section>
+</main><footer>源数据：GitHub仓库 data/snapshots/YYYY-MM-DD.json；筛选算法：scripts/replay_asof.py；验证：tests/test_replay_asof.py。未通过全面L1–L4历史复盘，不给出正式投资策略胜率。</footer>
+<script>
+"use strict";
+const $=x=>document.getElementById(x);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt=n=>typeof n==="number"&&Number.isFinite(n)?n.toLocaleString("zh-CN",{maximumFractionDigits:2}):"待观察";
+const out=n=>typeof n==="number"?(n>0?"+":"")+fmt(n)+"%":"待观察";
+const color=n=>typeof n!=="number"?"missing":n<0?"neg":n>0?"pos":"missing";
+let report=null;
+function draw(){
+ if(!report)return;
+ const date=$("date-filter").value,q=$("stock-filter").value.trim().toLowerCase(),only=$("with-picks").checked;
+ const days=report.selection.filter(d=>(date==="all"||d.date===date)&&(!only||d.signals.length));
+ const relevant=report.results.filter(r=>(date==="all"||r.date===date)&&(r.code.includes(q)||r.name.toLowerCase().includes(q)));
+ const perDay=new Map();
+ for(const x of relevant)perDay.set(x.date,(perDay.get(x.date)||0)+1);
+ $("daily").innerHTML=days.map(d=>{
+  const signals=d.signals.filter(s=>s.code.includes(q)||s.name.toLowerCase().includes(q));
+  if(q&&!signals.length)return "";
+  return '<div class="day"><h3>'+esc(d.date)+'　<span class="pill">'+(d.signals.length?'B池技术预筛 '+d.signals.length+'只':'暂无预筛候选')+'</span></h3>'+
+   '<small>涨/跌 '+fmt(d.market.up)+' / '+fmt(d.market.down)+'；上涨占比 '+fmt(d.market.up_share)+'%；状态：'+esc(d.selection_status)+'</small>'+
+   '<div>'+signals.map(s=>'<span class="pill">'+esc(s.name)+' '+esc(s.code)+'</span>').join(" ")+'</div></div>';
+ }).join("")||'<p>该筛选下暂无可核的预筛信号。</p>';
+ const header='<table><thead><tr><th>预筛日期/股票</th><th>当日参考价</th><th>5日变化</th><th>量能比</th><th>未来条件确认</th><th>D+1收盘变化</th><th>D+3收盘变化</th></tr></thead><tbody>';
+ const frozen=new Map(report.selection.flatMap(d=>d.signals.map(s=>[d.date+"|"+s.code,s])));
+ const rows=relevant.map(r=>{
+  const s=frozen.get(r.date+"|"+r.code)||{};
+  const d1=r.checkpoints.d1?.return_pct,d3=r.checkpoints.d3?.return_pct;
+  return '<tr><td><strong class="pick">'+esc(r.name)+'</strong><span class="code">'+esc(r.code)+' · '+esc(r.date)+'</span></td>'+
+   '<td>'+fmt(r.reference_close)+'元</td><td>'+out(s.price_change_5_sessions_pct)+'</td><td>'+fmt(s.turnover_ratio_prev3)+'倍</td>'+
+   '<td class="sub">'+esc(s.entry_condition||"待核")+'</td><td class="'+color(d1)+'">'+out(d1)+'</td><td class="'+color(d3)+'">'+out(d3)+'</td></tr>';
+ });
+ $("grid").innerHTML=rows.length?header+rows.join("")+'</tbody></table>':'<p class="caption">没有符合条件的候选记录。</p>';
+}
+async function init(){
+ try{
+  const res=await fetch("./replay/asof/index.json?v="+Date.now(),{cache:"no-store"});
+  if(!res.ok)throw Error("HTTP "+res.status);
+  report=await res.json();
+  if(report.schema_version!==1||!Array.isArray(report.selection)||!Array.isArray(report.results))throw Error("回放数据结构校验失败");
+  const s=report.summary;
+  const metrics=[
+   ["已回放交易日",s.evaluated_trade_days,"其中部分日期用于预热"],
+   ["技术预筛记录",s.technical_prescreen_records,"仅B池预筛，非完整策略推荐"],
+   ["D+1可核验",s.d1_observed,"收盘方向，不是实盘收益"],
+   ["D+1收盘上涨",s.d1_positive,"不可解释为原策略胜率"],
+  ];
+  $("metrics").innerHTML=metrics.map(x=>'<div class="metric"><span>'+x[0]+'</span><strong>'+fmt(x[1])+'</strong><span>'+x[2]+'</span></div>').join("");
+  $("fingerprint").textContent="冻结选股SHA-256："+report.selection_hash_sha256+"；算法版本："+report.policy_id+"；策略完整准确率：尚不能测算";
+  $("date-filter").innerHTML='<option value="all">全部交易日</option>'+report.selection.slice().reverse().map(d=>'<option value="'+esc(d.date)+'">'+esc(d.date)+'</option>').join("");
+  const params=new URLSearchParams(location.search);
+  if(report.selection.some(x=>x.date===params.get("date")))$("date-filter").value=params.get("date");
+  $("date-filter").onchange=draw;$("stock-filter").oninput=draw;$("with-picks").onchange=draw;draw();
+ }catch(e){$("daily").textContent="回放尚未发布或校验失败："+e.message;$("grid").textContent="数据暂不可用。";$("metrics").textContent="历史回放生成失败，不能提供准确率结论。"}
+}
+init();
+</script></body></html>
