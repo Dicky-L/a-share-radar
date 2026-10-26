@@ -54,5 +54,30 @@ class PerformanceTests(unittest.TestCase):
             self.assertEqual(result["records"][0]["checkpoints"]["d1"]["return_pct"],10.0)
             self.assertTrue(result["summary"]["no_actual_trades_logged"])
 
+    def test_reconstructed_report_does_not_inflate_prior_signal_win_rate(self):
+        with tempfile.TemporaryDirectory() as directory:
+            p=Path(directory)
+            snapshots=p/"snapshots";snapshots.mkdir()
+            cand=p/"candidates.json";index=p/"index.json"
+            cand.write_text(json.dumps({"records":[
+                {"date":"2026-10-22","code":"600001","name":"Actual","role":"watchlist"},
+                {"date":"2026-10-22","code":"600002","name":"Reconstructed",
+                 "role":"watchlist","report_type":"historical_reconstruction",
+                 "reconstructed_at":"2026-10-26"}]}),encoding="utf-8")
+            index.write_text(json.dumps({"dates":["2026-10-22","2026-10-23"]}),encoding="utf-8")
+            for day,base in [("2026-10-22",10),("2026-10-23",11)]:
+                rows=[{"code":str(600000+i),"price":base} for i in range(3000)]
+                (snapshots/(day+".json")).write_text(json.dumps({
+                    "date":day,"stocks":rows,"data_sources":[],"quality":{"status":"test"}
+                }),encoding="utf-8")
+            result=build(cand,index,snapshots)
+            self.assertEqual(result["summary"]["watchlist_rows"],1)
+            self.assertEqual(result["summary"]["reconstructed_rows_excluded"],1)
+            self.assertEqual(result["summary"]["d1_positive"],1)
+            self.assertEqual({r["code"] for r in result["records"]},{"600001"})
+            self.assertEqual({r["code"] for r in result["retrospective_records"]},{"600002"})
+            self.assertEqual(result["retrospective_records"][0]["classification"],
+                             "later_reconstruction_not_original_scheduled_push")
+
 if __name__=="__main__":
     unittest.main()
