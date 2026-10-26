@@ -73,6 +73,20 @@ class StrictPointInTimeTest(unittest.TestCase):
         self.assertIsNone(a["summary"]["actual_original_strategy_accuracy"])
         self.assertIsNone(a["summary"]["actual_executable_profit"])
 
+    def test_future_equal_weight_benchmark_only_in_evaluation(self):
+        result=build(self.days,self.fixture,stop="2026-10-20")
+        self.assertEqual(result["summary"]["d1_excess_observed"],
+                         result["summary"]["d1_observed"])
+        self.assertIsNotNone(result["summary"]["d1_mean_excess_vs_equal_weight_pct"])
+        for item in result["results"]:
+            d1=item["checkpoints"]["d1"]
+            if d1 and d1["return_pct"] is not None:
+                self.assertAlmostEqual(
+                    d1["excess_over_equal_weight_pct"],
+                    round(d1["return_pct"]-d1["market_equal_weight_pct"],3))
+        self.assertTrue(all("excess_over_equal_weight_pct" not in signal
+                            for day in result["selection"] for signal in day["signals"]))
+
     def test_no_a_pool_even_if_price_score_extreme(self):
         result=screen("2026-10-20",self.days,self.fixture)
         self.assertEqual(result["pool_A"],[])
