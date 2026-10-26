@@ -26,7 +26,7 @@ p{line-height:1.7}footer{color:#7088a0;font-size:12px}
 <nav><a href="./">今日雷达</a><a href="./monthly.html">每月历史</a><a href="./performance.html">原始推荐绩效</a></nav></header>
 <main>
 <div class="warning">
-<strong>这不是原L1–L4策略的准确率。</strong> 当前历史仓库只具备约19个交易日个股收盘与成交额，没有完整20/60日价量、行业净额、时间戳可核的历史催化/财报及OHLC。为防未来数据作弊，先运行<strong>L1/L2可验证的技术子规则</strong>，所得B池仅为<strong>预筛观察</strong>，A池恒为空，不冒充当时已经真正推荐的股票。回放中的D+1/D+3上涨比例也不是可执行交易胜率或净利润。
+<strong>这不是原L1–L4策略的准确率。</strong> 当前历史仓库只具备约19个交易日个股收盘与成交额，没有完整20/60日价量、行业净额、时间戳可核的历史催化/财报及OHLC。**此外预筛阈值是2026年10月26日才制定的，仍可能存在研究者后见之明；尚未进行样本外验证。**为防未来数据作弊，先运行<strong>L1/L2可验证的技术子规则</strong>，所得B池仅为<strong>预筛观察</strong>，A池恒为空，不冒充当时已经真正推荐的股票。回放中的D+1/D+3上涨比例也不是可执行交易胜率或净利润。
 </div>
 <section class="panel"><h2>回放执行结果</h2><div id="metrics" class="metrics"><div class="metric">正在读取回放证据…</div></div>
 <p id="fingerprint" class="caption">冻结文件校验：读取中…</p>
@@ -37,7 +37,7 @@ p{line-height:1.7}footer{color:#7088a0;font-size:12px}
 <label class="caption"><input type="checkbox" id="with-picks" checked/> 仅看有预筛候选的日期</label>
 </div><div id="daily" class="caption">读取逐日回放结果…</div></section>
 <section class="panel"><h2>全部技术预筛信号与D+1 / D+3核验</h2><div id="grid" class="table-wrap">读取结果中…</div>
-<p class="caption">D+N = 当期收盘基准到后面第N个交易日收盘的涨跌；不等于通过触发条件买入、也没有复权分红和真实退出模拟。同一股票跨日重复出现可能造成统计相关，不可直接把上涨比例称为策略赚钱的概率。</p></section>
+<p class="caption">D+N = 当期收盘基准到后面第N个交易日收盘的涨跌；「相对等权市场」表示从相同起止日期计算的个股变化减去同期沪深主板/创业板可用样本平均变化，不是官方指数收益。不能等同真实入场、复权净利润或策略赚钱概率。同一股票跨日重复出现可能造成统计相关，不可直接把上涨比例称为策略赚钱的概率。</p></section>
 </main><footer>源数据：GitHub仓库 data/snapshots/YYYY-MM-DD.json；筛选算法：scripts/replay_asof.py；验证：tests/test_replay_asof.py。未通过全面L1–L4历史复盘，不给出正式投资策略胜率。</footer>
 <script>
 "use strict";
@@ -61,14 +61,14 @@ function draw(){
    '<small>涨/跌 '+fmt(d.market.up)+' / '+fmt(d.market.down)+'；上涨占比 '+fmt(d.market.up_share)+'%；状态：'+esc(d.selection_status)+'</small>'+
    '<div>'+signals.map(s=>'<span class="pill">'+esc(s.name)+' '+esc(s.code)+'</span>').join(" ")+'</div></div>';
  }).join("")||'<p>该筛选下暂无可核的预筛信号。</p>';
- const header='<table><thead><tr><th>预筛日期/股票</th><th>当日参考价</th><th>5日变化</th><th>量能比</th><th>未来条件确认</th><th>D+1收盘变化</th><th>D+3收盘变化</th></tr></thead><tbody>';
+ const header='<table><thead><tr><th>预筛日期/股票</th><th>当日参考价</th><th>5日变化</th><th>量能比</th><th>未来条件确认</th><th>D+1收盘变化</th><th>D+1相对等权市场</th><th>D+3收盘变化</th></tr></thead><tbody>';
  const frozen=new Map(report.selection.flatMap(d=>d.signals.map(s=>[d.date+"|"+s.code,s])));
  const rows=relevant.map(r=>{
   const s=frozen.get(r.date+"|"+r.code)||{};
-  const d1=r.checkpoints.d1?.return_pct,d3=r.checkpoints.d3?.return_pct;
+  const d1=r.checkpoints.d1?.return_pct,d3=r.checkpoints.d3?.return_pct,excess=r.checkpoints.d1?.excess_over_equal_weight_pct;
   return '<tr><td><strong class="pick">'+esc(r.name)+'</strong><span class="code">'+esc(r.code)+' · '+esc(r.date)+'</span></td>'+
    '<td>'+fmt(r.reference_close)+'元</td><td>'+out(s.price_change_5_sessions_pct)+'</td><td>'+fmt(s.turnover_ratio_prev3)+'倍</td>'+
-   '<td class="sub">'+esc(s.entry_condition||"待核")+'</td><td class="'+color(d1)+'">'+out(d1)+'</td><td class="'+color(d3)+'">'+out(d3)+'</td></tr>';
+   '<td class="sub">'+esc(s.entry_condition||"待核")+'</td><td class="'+color(d1)+'">'+out(d1)+'</td><td class="'+color(excess)+'">'+out(excess)+'</td><td class="'+color(d3)+'">'+out(d3)+'</td></tr>';
  });
  $("grid").innerHTML=rows.length?header+rows.join("")+'</tbody></table>':'<p class="caption">没有符合条件的候选记录。</p>';
 }
@@ -84,6 +84,7 @@ async function init(){
    ["技术预筛记录",s.technical_prescreen_records,"仅B池预筛，非完整策略推荐"],
    ["D+1可核验",s.d1_observed,"收盘方向，不是实盘收益"],
    ["D+1收盘上涨",s.d1_positive,"不可解释为原策略胜率"],
+   ["D+1跑赢同日等权样本",s.d1_excess_positive,"简单市场对照，非真实超额盈利"],
   ];
   $("metrics").innerHTML=metrics.map(x=>'<div class="metric"><span>'+x[0]+'</span><strong>'+fmt(x[1])+'</strong><span>'+x[2]+'</span></div>').join("");
   $("fingerprint").textContent="冻结选股SHA-256："+report.selection_hash_sha256+"；算法版本："+report.policy_id+"；策略完整准确率：尚不能测算";
