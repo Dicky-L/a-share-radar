@@ -207,6 +207,23 @@ def evaluate(frozen, dates, snapshot_loader):
         # In evaluation we are allowed to read later prices up to available end.
         obj = snapshot_loader(d, d)
         quotes[d] = obj["stocks"]
+    # Comparison is evaluated AFTER signal selection, against a same-date
+    # equal-weight sample. This is only a stock-level direction benchmark,
+    # not an official equity index and not an executable market portfolio.
+    benchmark = {}
+    for report in frozen:
+        base_day = report["date"]
+        base_stocks = quotes.get(base_day, {})
+        for future_day in (d for d in dates if d > base_day):
+            next_stocks = quotes[future_day]
+            changes = []
+            for code, row in base_stocks.items():
+                next_row = next_stocks.get(code)
+                if next_row and row["close"] > 0:
+                    changes.append((next_row["close"] / row["close"] - 1) * 100)
+            benchmark[(base_day, future_day)] = round(
+                sum(changes) / len(changes), 3
+            ) if len(changes) >= 2500 else None
     outcomes = []
     for report in frozen:
         if report["selection_status"] not in {"partial_l1_l2_only_not_original_strategy"}:
@@ -218,9 +235,15 @@ def evaluate(frozen, dates, snapshot_loader):
             for i, fday in enumerate(future):
                 stock = quotes[fday].get(signal["code"])
                 c = stock["close"] if stock else None
+                raw_return = pct(c, signal["reference_close"])
+                matched_benchmark = benchmark.get((day, fday))
                 later.append({
                     "trading_day": i + 1, "date": fday, "close": c,
-                    "return_pct": pct(c, signal["reference_close"]),
+                    "return_pct": raw_return,
+                    "market_equal_weight_pct": matched_benchmark,
+                    "excess_over_equal_weight_pct": round(
+                        raw_return - matched_benchmark, 3
+                    ) if raw_return is not None and matched_benchmark is not None else None,
                 })
             checkpoints = {("d" + str(n)): later[n - 1] if len(later) >= n else None
                            for n in (1, 3, 5, 10)}
@@ -243,12 +266,20 @@ def build(dates, loader=load_snapshot, stop=STOP_DATE):
     results = [x for x in outcomes if x["checkpoints"]["d1"] and
                x["checkpoints"]["d1"]["return_pct"] is not None]
     records = sum(len(day["signals"]) for day in selections)
+    d1_excess = [x["checkpoints"]["d1"]["excess_over_equal_weight_pct"]
+                 for x in outcomes if x["checkpoints"]["d1"] and
+                 x["checkpoints"]["d1"]["excess_over_equal_weight_pct"] is not None]
     summary = {
         "evaluated_trade_days": len(selections),
         "technical_prescreen_records": records,
         "distinct_tickers": len({x["code"] for x in outcomes}),
         "d1_observed": len(results),
         "d1_positive": sum(x["checkpoints"]["d1"]["return_pct"] > 0 for x in results),
+        "d1_excess_observed": len(d1_excess),
+        "d1_excess_positive": sum(v > 0 for v in d1_excess),
+        "d1_mean_excess_vs_equal_weight_pct": round(
+            sum(d1_excess) / len(d1_excess), 3
+        ) if d1_excess else None,
         "d1_mean_close_change_pct": round(
             sum(x["checkpoints"]["d1"]["return_pct"] for x in results) / len(results), 3
         ) if results else None,
@@ -268,6 +299,7 @@ def build(dates, loader=load_snapshot, stop=STOP_DATE):
             "技术预筛结果不能称为原L1–L4策略胜率：20/60日、行业资金、财务催化、排雷均不完整。",
             "以日期收盘价计算的D+1变化不是可成交收益；没有成交价格、T+1和手续费验证。",
             "后验回填股票池有幸存者偏差。严禁根据未来价格重排此前日期的候选。",
+            "技术预筛阈值在2026-10-26设计，研究者可能在看过历史涨跌后选取规则；即使没有程序层面未来数据泄漏，也不能把这组结果当作独立样本外准确率。",
         ],
     }
 
