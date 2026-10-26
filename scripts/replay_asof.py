@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE_INDEX = ROOT / "data" / "index.json"
 SOURCE_SNAPSHOTS = ROOT / "data" / "snapshots"
 OUTPUT = ROOT / "replay" / "asof"
+FROZEN = OUTPUT / "frozen-selections.json"
 UNIVERSE = re.compile(r"^(?:60|00|30)\d{4}$")
 STOP_DATE = "2026-10-22"
 MIN_SESSIONS = 6
@@ -257,8 +258,38 @@ def evaluate(frozen, dates, snapshot_loader):
     return outcomes
 
 
-def build(dates, loader=load_snapshot, stop=STOP_DATE):
-    selections = freeze_selections(dates, end=stop, loader=loader)
+def checked_frozen(doc, dates, stop=STOP_DATE):
+    """Return the one-time committed selections after integrity checks."""
+    if not isinstance(doc, dict) or doc.get("schema_version") != 1:
+        raise ValueError("Invalid frozen-selection manifest")
+    if doc.get("policy_id") != POLICY_ID or doc.get("selection_end") != stop:
+        raise ValueError("Frozen policy/version or end date mismatch")
+    entries = doc.get("selection")
+    if not isinstance(entries, list) or not entries:
+        raise ValueError("Frozen selection list is absent")
+    frozen_days = [day.get("date") for day in entries]
+    if frozen_days != sorted(set(frozen_days)) or frozen_days[-1] != stop:
+        raise ValueError("Frozen selection days out of order or incomplete")
+    if any(d not in dates or d > stop for d in frozen_days):
+        raise ValueError("Frozen dates do not match verified market sources")
+    for row in entries:
+        day = row["date"]
+        if row.get("data_access_ceiling") != day or row.get("asof_date") != day:
+            raise ValueError("Frozen selection has inconsistent as-of ceiling")
+        if row.get("policy_id") != POLICY_ID or row.get("pool_A"):
+            raise ValueError("Frozen selection breaches its technical-only contract")
+        for sig in row.get("signals", []):
+            if sig.get("date") != day or sig.get("classification") != "TECHNICAL_PRESCREEN_ONLY":
+                raise ValueError("Frozen signal has incorrect original date or classification")
+    serialized = json.dumps(entries, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    check = hashlib.sha256(serialized).hexdigest()
+    if check != doc.get("selection_hash_sha256"):
+        raise ValueError("Frozen selection content changed without a new locked baseline")
+    return entries
+
+
+def build(dates, loader=load_snapshot, stop=STOP_DATE, locked_selections=None):
+    selections = locked_selections if locked_selections is not None else freeze_selections(dates, end=stop, loader=loader)
     frozen_bytes = json.dumps(selections, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
     fingerprint = hashlib.sha256(frozen_bytes).hexdigest()
     # Select first, THEN and only then evaluate against any later observations.
@@ -312,7 +343,17 @@ def main():
     dates = get_dates()
     if args.end not in dates:
         raise ValueError("Specified replay end must have verified market data")
-    result = build(dates, stop=args.end)
+    if FROZEN.exists():
+        manifest = json.loads(FROZEN.read_text(encoding="utf-8"))
+        locked = checked_frozen(manifest, dates, stop=args.end)
+        result = build(dates, stop=args.end, locked_selections=locked)
+        if result["selection_hash_sha256"] != manifest["selection_hash_sha256"]:
+            raise ValueError("Published candidate SHA mismatch with frozen manifest")
+        result["frozen_at_utc"] = manifest.get("frozen_at_utc")
+        result["selection_source"] = "./replay/asof/frozen-selections.json"
+        result["historical_selection_is_locked"] = True
+    else:
+        raise FileNotFoundError("Missing committed replay/asof/frozen-selections.json: publishing mutable history is prohibited")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     print("ASOF replay %d days, %d provisional B prescreens, %d D+1 observed, hash %s" % (
