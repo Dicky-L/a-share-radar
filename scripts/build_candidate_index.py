@@ -151,7 +151,15 @@ def build(folder=REPORTS):
         status = fields.get("status")
         if status not in {"original","summary"}:
             raise ValueError("Invalid report provenance: "+path.name)
-        entries += extract(parts[2],path.stem,status)
+        # A later reconstruction must not inflate past 18:00 win statistics.
+        report_type = fields.get("report_type","dated_report_archive")
+        if report_type not in {"dated_report_archive","historical_reconstruction"}:
+            raise ValueError("Unsupported report type: "+path.name)
+        captured = extract(parts[2],path.stem,status)
+        for row in captured:
+            row["report_type"] = report_type
+            row["reconstructed_at"] = fields.get("reconstructed_at") if report_type=="historical_reconstruction" else None
+        entries += captured
     # Recover only explicitly documented prior-task fields. Never re-label
     # these supplementary notes as a complete original report.
     details_path = folder / "recovered-details.json"
@@ -188,7 +196,7 @@ def build(folder=REPORTS):
         key = row["code"]
         history.setdefault(key,{"code":key,"name":row["name"],"observations":[]})
         history[key]["observations"].append({
-            "date":row["date"],"pool":row["pool"],"role":row["role"],"report_status":row["report_status"]
+            "date":row["date"],"pool":row["pool"],"role":row["role"],"report_status":row["report_status"],"report_type":row.get("report_type","dated_report_archive")
         })
     return {
         "schema_version":1,
