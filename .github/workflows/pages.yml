@@ -12,6 +12,7 @@ on:
       - monthly.html
       - reports/**
       - tests/**
+      - templates/**
       - scripts/build_report_index.py
       - scripts/check_daily_publication.py
       - scripts/build_candidate_index.py
@@ -37,6 +38,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify report reader JavaScript syntax
         run: node --check assets/reading.js && node --check assets/charts.js && node --check assets/pickboard.js && node --check assets/daily.js && node --check assets/pool-guide.js && node --check assets/rolling.js && node --check assets/report-template.js
+      - name: Test unified stock report template and verified 10-sector comparisons
+        run: python3 -m unittest discover -s tests -p 'test_report_template.py' -v
       - name: Test stock-selection archive
         run: python3 -m unittest discover -s tests -p 'test_candidate_index.py' -v
       - name: Test strict point-in-time replay / anti-lookahead invariants
