@@ -27,7 +27,7 @@ def number(v):
 
 class TemplateContracts(unittest.TestCase):
     def test_both_baseline_reports_have_ten_real_industries(self):
-        for day in ("2026-10-20","2026-10-23"):
+        for day in ("2026-10-20","2026-10-21","2026-10-22","2026-10-23"):
             with self.subTest(day=day):
                 head,rows=industry_table(day)
                 self.assertEqual(len(rows),10)
@@ -38,6 +38,43 @@ class TemplateContracts(unittest.TestCase):
                     self.assertTrue(row[0])
                     self.assertAlmostEqual(number(row[2])-number(row[1]),number(row[3]),places=2)
 
+    def test_oct19_partial_sector_comparison_flags_unverified_prior_day(self):
+        header, rows = industry_table("2026-10-19")
+        self.assertEqual(len(rows), 10)
+        self.assertIn("10月16日", header)
+        self.assertTrue(all("待核" in r[1] and "待核" in r[3] for r in rows))
+
+    def test_oct21_oct22_data_source_stays_consistent(self):
+        pairs = {
+            "2026-10-21": ("10月20日","10月21日",-9.76,12.77,6.71,64.85),
+            "2026-10-22": ("10月21日","10月22日",12.77,-83.08,64.85,-137.02),
+        }
+        for day,(previous,current,old_communications,new_communications,old_electronics,new_electronics) in pairs.items():
+            with self.subTest(day=day):
+                header, rows = industry_table(day)
+                self.assertIn(previous,header)
+                self.assertIn(current,header)
+                rows = {r[0]:r for r in rows}
+                self.assertAlmostEqual(number(rows["通信"][1]),old_communications)
+                self.assertAlmostEqual(number(rows["通信"][2]),new_communications)
+                self.assertAlmostEqual(number(rows["电子"][1]),old_electronics)
+                self.assertAlmostEqual(number(rows["电子"][2]),new_electronics)
+                text=(ROOT/"reports"/(day+".md")).read_text(encoding="utf-8")
+                self.assertIn("10个申万一级行业双日对照",text)
+                self.assertIn("数据口径、来源与局限",text)
+
+    def test_daily_picks_keep_identity_when_template_updates(self):
+        from scripts.build_candidate_index import build
+        results = build(ROOT/"reports")["records"]
+        def picks(d):
+            return {r["code"] for r in results if r["date"]==d and r["role"]=="watchlist"}
+        self.assertEqual(picks("2026-10-19"),{"601985","003816","600183"})
+        self.assertEqual(picks("2026-10-20"),{"600183"})
+        self.assertEqual(picks("2026-10-21"),{"600183","002463","002436"})
+        self.assertEqual(picks("2026-10-22"),set())
+        self.assertEqual(picks("2026-10-23"),{"002230","600584","600031","300476"})
+        self.assertTrue(all(r["report_type"]=="historical_reconstruction"
+                            for r in results if r["date"]=="2026-10-22"))
     def test_oct23_two_day_provenance_and_no_lookahead_claim(self):
         report=(ROOT/"reports/2026-10-23.md").read_text(encoding="utf-8")
         header,rows=industry_table("2026-10-23")
