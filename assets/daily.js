@@ -114,7 +114,7 @@ async function openDate(day,options={}){
  $("content").innerHTML="<div class='placeholder'>正在读取归档…</div>";
  actionState(false,false);
  reportText="";rawPath="";
- clearPlugins();if(!options.keepUrl)rememberDate(day);
+ clearPlugins();window.RadarReportTemplate?.render?.({status:"market_only",date:day});if(!options.keepUrl)rememberDate(day);
  if(item.status==="market_only"){
    $("title").textContent=day+" · 已归档市场行情（选股日报缺失）";
    $("content").replaceChildren(marketCard(day,item));
@@ -157,6 +157,7 @@ async function openDate(day,options={}){
    reportText=text;
    // renderMarkdown is provided by index.html's original source renderer.
    $("content").innerHTML=renderMarkdown(text);
+   window.RadarReportTemplate?.render?.({date:item.date,status:item.status,markdown:text});
    window.RadarReader?.refresh?.();
    applyPlugins(item,text);
    actionState(true,true);
