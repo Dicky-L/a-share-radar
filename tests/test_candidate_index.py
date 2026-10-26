@@ -125,6 +125,21 @@ class CandidateArchiveTest(unittest.TestCase):
                          "2026-10-17","2026-10-18","2026-10-19","2026-10-20","2026-10-21"} <= dates)
         self.assertFalse(any(d<"2026-10-13" for d in dates))
 
+    def test_oct23_reconstructed_asof_report_is_provenance_labeled(self):
+        archive = build(Path(__file__).resolve().parents[1] / "reports")
+        picks = [r for r in archive["records"] if r["date"]=="2026-10-23"
+                 and r["role"]=="watchlist"]
+        self.assertEqual({r["code"] for r in picks},
+                         {"002230","600584","600031","300476"})
+        self.assertTrue(all(r["pool"]=="B" for r in picks))
+        self.assertTrue(all(r["report_type"]=="historical_reconstruction"
+                            and r["reconstructed_at"]=="2026-10-26" for r in picks))
+        self.assertTrue(all(r["entry_trigger"] and r["invalidation"]
+                            and r["exit_plan"] for r in picks))
+        old_picks = [r for r in archive["records"] if r["date"]=="2026-10-23"
+                     and r["role"]=="historical_review"]
+        self.assertGreaterEqual(len(old_picks), 7)
+
 
 if __name__=="__main__":
     unittest.main()
