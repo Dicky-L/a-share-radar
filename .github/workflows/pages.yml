@@ -7,6 +7,8 @@ on:
       - assets/**
       - market.html
       - performance.html
+      - replay.html
+      - scripts/replay_asof.py
       - monthly.html
       - reports/**
       - tests/**
