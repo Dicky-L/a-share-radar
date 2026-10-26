@@ -75,7 +75,7 @@ function list(){
  $("count").textContent=filtered.length+"个日期 · "+reportCount+"篇报告 · "+marketCount+"个行情日";
  $("list").innerHTML=filtered.length?filtered.map(e=>
    "<button type='button' data-date='"+esc(e.date)+"' class='item "+(selected?.date===e.date?"current":"")+"' aria-current='"+(selected?.date===e.date?"true":"false")+
-   "'><span class='date'>"+esc(e.date)+"</span><span class='tag "+(e.status==="original"?"full":e.status==="market_only"?"only-market":"")+"'>"+st(e.status)+
+   "'><span class='date'>"+esc(e.date)+"</span><span class='tag "+(e.status==="original"?"full":e.status==="market_only"?"only-market":"")+"'>"+labelFor(e)+
    "</span><span class='desc'>"+esc(e.preview||"该日已有验证通过的行情快照")+"</span></button>").join(""):
    "<div class='placeholder'>没有符合筛选的日期。可清除筛选后查看全部历史行情与报告。</div>";
 }
