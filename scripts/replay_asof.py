@@ -320,6 +320,13 @@ def main():
         result["summary"]["technical_prescreen_records"],
         result["summary"]["d1_observed"],
         result["selection_hash_sha256"][:16]))
+    metrics = result["summary"]
+    print("D1 PRICE DIRECTION OBSERVED: %d/%d positive; average close-change %s%%" % (
+        metrics["d1_positive"], metrics["d1_observed"], metrics["d1_mean_close_change_pct"]))
+    print("D1 VS EQUAL-WEIGHT MARKET: %d/%d outperform; mean excess %s percentage points" % (
+        metrics["d1_excess_positive"], metrics["d1_excess_observed"],
+        metrics["d1_mean_excess_vs_equal_weight_pct"]))
+    print("ORIGINAL L1-L4 WIN RATE: NOT MEASURABLE; actual executed P&L: NOT MEASURABLE")
 
 
 if __name__ == "__main__":
