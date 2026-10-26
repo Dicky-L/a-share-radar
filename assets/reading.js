@@ -105,7 +105,7 @@ function sectionNavigation(){
  const sections=[];
  headings.forEach((heading,i)=>{
    let name=heading.textContent.trim(),nextHeading=headings[i+1];
-   heading.id="reader-section-"+i;heading.classList.add("section-header");
+   heading.id=heading.id||"reader-section-"+i;heading.classList.add("section-header");
    let section=make("div","read-section-body");
    heading.after(section);
    let node=section.nextSibling;
