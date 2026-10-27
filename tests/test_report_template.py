@@ -70,7 +70,7 @@ class TemplateContracts(unittest.TestCase):
         self.assertIn("10月26日",head)
         self.assertIn("report_type: historical_reconstruction",report)
         self.assertIn("reconstructed_at: 2026-10-27",report)
-        self.assertIn("不是26日真实发出的信号",report)
+        self.assertIn("不是26日已真实发出的信号",report)
         self.assertIn("202610263908055684",report)
         data={row[0]:row for row in rows}
         self.assertAlmostEqual(number(data["电子"][1]),73.46)
