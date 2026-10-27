@@ -27,7 +27,7 @@ def number(v):
 
 class TemplateContracts(unittest.TestCase):
     def test_both_baseline_reports_have_ten_real_industries(self):
-        for day in ("2026-10-20","2026-10-21","2026-10-22","2026-10-23"):
+        for day in ("2026-10-20","2026-10-21","2026-10-22","2026-10-23","2026-10-26"):
             with self.subTest(day=day):
                 head,rows=industry_table(day)
                 self.assertEqual(len(rows),10)
@@ -62,6 +62,26 @@ class TemplateContracts(unittest.TestCase):
                 text=(ROOT/"reports"/(day+".md")).read_text(encoding="utf-8")
                 self.assertIn("10个申万一级行业双日对照",text)
                 self.assertIn("数据口径、来源与局限",text)
+
+    def test_oct26_reconstruction_provenance_and_funds(self):
+        report=(ROOT/"reports/2026-10-26.md").read_text(encoding="utf-8")
+        head,rows=industry_table("2026-10-26")
+        self.assertIn("10月23日",head)
+        self.assertIn("10月26日",head)
+        self.assertIn("report_type: historical_reconstruction",report)
+        self.assertIn("reconstructed_at: 2026-10-27",report)
+        self.assertIn("不是26日真实发出的信号",report)
+        self.assertIn("202610263908055684",report)
+        data={row[0]:row for row in rows}
+        self.assertAlmostEqual(number(data["电子"][1]),73.46)
+        self.assertAlmostEqual(number(data["电子"][2]),-122.38)
+        self.assertAlmostEqual(number(data["汽车"][2]),10.80)
+        self.assertTrue(all("待核" not in r[1:4] for r in rows))
+        from scripts.build_candidate_index import build
+        picks=[r for r in build(ROOT/"reports")["records"]
+               if r["date"]=="2026-10-26" and r["role"]=="watchlist"]
+        self.assertEqual({r["code"] for r in picks},{"000625","600031","002230"})
+        self.assertTrue(all(r["report_type"]=="historical_reconstruction" for r in picks))
 
     def test_daily_picks_keep_identity_when_template_updates(self):
         from scripts.build_candidate_index import build
