@@ -17,13 +17,13 @@ class DailyPublishTest(unittest.TestCase):
             ok,_=verify("2026-10-22",Path(d))
             self.assertFalse(ok)
 
-    def test_sourced_full_report(self):
+    def test_long_but_incomplete_report_is_rejected(self):
         with tempfile.TemporaryDirectory() as d:
             text="---\ndate: 2026-10-22\nstatus: original\nsource: Published task\n---\n"
             text+="# 每日选股日报\n## 市场资金\n"+("真实股票交易观察；"*90)+"\n## 候选股票与卖出条件\n## 历史复盘\n"
             Path(d,"2026-10-22.md").write_text(text,encoding="utf-8")
             ok,_=verify("2026-10-22",Path(d))
-            self.assertTrue(ok)
+            self.assertFalse(ok)  # incomplete V1 must now fail
 
 if __name__ == "__main__":
     unittest.main()
