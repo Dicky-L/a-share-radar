@@ -41,7 +41,28 @@ def verify(day:str,folder:Path=REPORTS):
         return False,f"{path}: content is too short or lacks the full report's sections"
     if not all(k in body for k in ("市场","股票")):
         return False,f"{path}: missing key report subjects, manual review required"
-    return True,f"{path}: full original report exists, content length={len(body)}"
+    # V1 publication contract: a long summary is not a complete nine-section report.
+    required=[
+        ("选股结论", r"^#{2,3}\\s+.*选股结论"),
+        ("市场总览", r"^#{2,3}\\s+.*(?:市场.*总览|全市场资金)"),
+        ("十行业双日对照", r"^#{2,3}\\s+.*(?:10个申万|十个申万|行业双日对照)"),
+        ("产业解读", r"^#{2,3}\\s+.*(?:产业解读|资金关注度)"),
+        ("卖出计划", r"^#{2,3}\\s+.*(?:选股观察.*卖出|卖出计划)"),
+        ("失败复盘", r"^#{2,3}\\s+.*(?:失败复盘|前期推荐)"),
+        ("风险管理", r"^#{2,3}\\s+.*(?:风险管理|仓位与卖出)"),
+        ("下日验证", r"^#{2,3}\\s+.*(?:验证清单|下一交易日)"),
+        ("数据来源", r"^#{2,3}\\s+.*(?:数据口径|来源与局限)"),
+    ]
+    missing=[label for label,pattern in required if not re.search(pattern,body,re.M)]
+    if missing:
+        return False,f"{path}: missing V1 sections: {', '.join(missing)}"
+    if len(re.findall(r"^\\|[^\\n]+\\|\\s*$",body,re.M))<15:
+        return False,f"{path}: insufficient sector/stock comparison table rows"
+    if not re.search(r"https?://",body):
+        return False,f"{path}: no verifiable source links"
+    if meta.get("report_type")=="historical_reconstruction":
+        return False,f"{path}: reconstructed report cannot be original"
+    return True,f"{path}: V1 nine-section original report structurally valid, content length={len(body)}"
 
 def main():
     p=argparse.ArgumentParser()
