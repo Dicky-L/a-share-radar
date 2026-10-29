@@ -15,9 +15,10 @@ const {sectorColumns,industryGraphic,formatFundDate}=window.RadarReportTemplate;
 assert.equal(window.RadarReportTemplate.version,"2026.10-v1.2");
 function actualMarkdownTable(day){
  const src=fs.readFileSync("reports/"+day+".md","utf8");
- const section=src.match(/^## 三、10个申万一级行业双日对照[^\n]*\n([\s\S]*?)(?=^## 四、|\s*$)/m);
- assert(section,"missing sector chapter "+day);
- const lines=section[1].split("\n");
+ const start=src.indexOf("## 三、10个申万一级行业双日对照");
+ const end=src.indexOf("\n## 四、",start);
+ assert(start>=0&&end>start,"missing sector chapter "+day);
+ const lines=src.slice(start,end).split("\n");
  const at=lines.findIndex(x=>x.startsWith("|")&&x.includes("申万一级行业")&&x.includes("净额"));
  assert(at>=0,"missing sector table "+day);
  const split=x=>x.trim().replace(/^\||\|$/g,"").split("|").map(c=>c.trim().replace(/\*\*/g,""));
