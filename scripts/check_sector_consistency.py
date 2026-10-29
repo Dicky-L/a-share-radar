@@ -16,7 +16,7 @@ STORE=ROOT/"data"/"industry-flows"
 REPORTS=ROOT/"reports"
 FAMILY="stcn_databao_sw1_mainflow"
 HEADINGS=re.compile(r"10月(\d{1,2})日主力净额")
-REPORT_DATES=("2026-10-26","2026-10-27","2026-10-28")
+REPORT_DATES=("2026-10-26","2026-10-27","2026-10-28","2026-10-29")
 
 
 def decimal(raw):
