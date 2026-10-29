@@ -4,7 +4,7 @@
    Extend LAYOUT below to evolve the template; never fabricate old content. */
 (()=>{
 "use strict";
-const VERSION="2026.10-v1.2";
+const VERSION="2026.10-v1.3";
 const LAYOUT=[
  {key:"selection",label:"本期选股结论",hint:"A/B/C池、方向、是否允许等待买入",rules:["选股结论","今日结论","本期结论","总体结论"]},
  {key:"market",label:"全市场资金总览",hint:"指数、两日成交额、涨跌家数与市场广度",rules:["全市场数据","市场资金总览","市场环境与风险","市场环境","市场概况","市场资金","市场总览"]},
@@ -76,6 +76,66 @@ function collapseLegacyEmojiChart(boxed){
  const summary=el("summary","","查看原报告字符图（已由精确刻度图替代）");
  desc.before(details);details.append(summary,desc,list);
 }
+/* Both daily source files must cover the same ENTIRE trading session.
+   Differences in posting time are disclosed, never silently normalized.
+   The report table is CI-verified against these canonical daily files. */
+function checkFundsWindow(doc,day){
+ if(doc.date!==day||doc.source_id!=="stcn_databao_sw1_mainflow"||
+    doc.industry_classification!=="申万一级"||doc.unit!=="亿元"||
+    !Array.isArray(doc.industries)||!doc.published_at||!doc.source_url)
+   throw new Error("数据源、申万分类或单位不一致");
+ const stamp=new Date(doc.published_at).getTime();
+ const afterClose=new Date(day+"T15:00:00+08:00").getTime();
+ const cutoff=new Date(day+"T18:00:00+08:00").getTime();
+ if(!Number.isFinite(stamp)||stamp<afterClose||stamp>cutoff)
+   throw new Error(day+" 资金发布日期不在15:00至18:00收盘资料窗口");
+ return stamp;
+}
+async function verifyFundsChart(chart,reportDate,heads,indices,rows,evidence){
+ if(typeof fetch!=="function"||reportDate!=="2026-10-28")return;
+ const days=indices.map(i=>{
+   const m=heads[i].match(/(?:(\d{1,2})月)(\d{1,2})日/);
+   if(!m)throw new Error("日期表头不能核实");
+   return reportDate.slice(0,4)+"-"+m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0");
+ });
+ try{
+   if(days[1]!==reportDate||days[0]>=days[1])throw new Error("前日/当日日期不一致");
+   const docs=await Promise.all(days.map(async day=>{
+     const res=await fetch("./data/industry-flows/"+day+".json",{cache:"no-store"});
+     if(!res.ok)throw new Error(day+" 同源日级台账尚未可用");
+     return res.json();
+   }));
+   const times=docs.map((doc,i)=>checkFundsWindow(doc,days[i]));
+   if(docs[0].source_id!==docs[1].source_id||docs[0].metric!==docs[1].metric)
+     throw new Error("数据商或主力资金定义不一致");
+   const by=docs.map(doc=>new Map(doc.industries.map(r=>[r.name,r.net_yi])));
+   for(const row of rows){
+     if(by.some((m,i)=>typeof m.get(row.name)!=="number"||Math.abs(m.get(row.name)-(i?row.right:row.left))>0.005))
+       throw new Error(row.name+" 主图金额与日级数据源不一致");
+   }
+   if(!chart.isConnected)return;
+   const label=d=>Number(d.slice(5,7))+"月"+Number(d.slice(8,10))+"日";
+   const hm=stamp=>new Date(stamp).toLocaleTimeString("zh-CN",{timeZone:"Asia/Shanghai",hour12:false,hour:"2-digit",minute:"2-digit"});
+   evidence.textContent="";
+   evidence.append(el("strong","","已核验：相同统计窗口（全天交易至15:00收盘），同一数据商与申万一级行业"));
+   const info=el("span","","发布时点："+label(days[0])+" "+hm(times[0])+" / "+label(days[1])+" "+hm(times[1])+"；发布时间不同，但均为盘后全日汇总。");
+   evidence.append(info);
+   docs.forEach((doc,i)=>{
+     const a=el("a","",label(days[i])+"原始资金日报");
+     a.href=doc.source_url;a.target="_blank";a.rel="noopener noreferrer";
+     evidence.append(a);
+   });
+   evidence.className="frame-funds-evidence verified";
+   chart.dataset.sourceValidated="true";
+ }catch(e){
+   if(!chart.isConnected)return;
+   evidence.textContent="数据口径异常："+e.message+"。暂停展示主图，避免不同供应商、统计窗口或金额混在一起；请核对原报告表格。";
+   evidence.className="frame-funds-evidence alert";
+   chart.dataset.sourceValidated="false";
+   chart.querySelectorAll(".frame-funds-row").forEach(row=>row.remove());
+ }
+}
+
 function industryGraphic(slot,reportDate){
  const table=sectorTable(slot);
  if(!table)return;
@@ -90,6 +150,7 @@ function industryGraphic(slot,reportDate){
    }
  }
  if(valid.length<2)return;
+ if(valid.length!==10 && reportDate==="2026-10-28")return;
  const max=Math.max(1,...valid.flatMap(x=>[Math.abs(x.left),Math.abs(x.right)]));
  const graph=el("section","frame-funds");
  graph.dataset.source="dated-net-table";
@@ -121,6 +182,12 @@ function industryGraphic(slot,reportDate){
    group.append(pairs);graph.append(group);
  }
  graph.append(el("p","frame-funds-note","同图统一绝对金额刻度，零线位于中央；仅比较主力净额方向，不表示成交总额或行业之间的资金转移。精确值与数据来源以原报告表格为准。"));
+ const evidence=el("div","frame-funds-evidence",reportDate==="2026-10-28"?"正在交叉核对27/28日收盘资金台账…":"主力净额取自当期报告表格；数据商及发布时间请查看报告来源。");
+ graph.append(evidence);
+ verifyFundsChart(graph,reportDate,heads,indices,valid,evidence).catch(err=>{
+   evidence.className="frame-funds-evidence alert";
+   evidence.textContent="来源核对失败："+err.message;
+ });
  const boxed=table.closest(".tablebox")||table;
  boxed.before(graph);
  collapseLegacyEmojiChart(boxed);
