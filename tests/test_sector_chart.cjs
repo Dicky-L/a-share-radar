@@ -12,7 +12,7 @@ const window={};
 const document={createElement(tag){return new Elem(tag)}};
 vm.runInNewContext(fs.readFileSync("assets/report-template.js","utf8"),{window,document});
 const {sectorColumns,industryGraphic,formatFundDate}=window.RadarReportTemplate;
-assert.equal(window.RadarReportTemplate.version,"2026.10-v1.2");
+assert.equal(window.RadarReportTemplate.version,"2026.10-v1.3");
 function actualMarkdownTable(day){
  const src=fs.readFileSync("reports/"+day+".md","utf8");
  const start=src.indexOf("## 三、10个申万一级行业双日对照");
@@ -73,6 +73,23 @@ function check(day,labels){
 check("2026-10-28",["10月27日主力净额","10月28日主力净额"]);
 check("2026-10-26",["10月23日主力净额","10月26日主力净额"]);
 check("2026-10-23",["10月22日主力净额","10月23日主力净额"]);
+const prior=JSON.parse(fs.readFileSync("data/industry-flows/2026-10-27.json","utf8"));
+const current=JSON.parse(fs.readFileSync("data/industry-flows/2026-10-28.json","utf8"));
+const checkWindow=window.RadarReportTemplate.checkFundsWindow;
+const pTime=checkWindow(prior,"2026-10-27"),cTime=checkWindow(current,"2026-10-28");
+assert.equal(prior.source_id,current.source_id,"provider must match");
+assert.equal(prior.industry_classification,current.industry_classification);
+assert.equal(prior.metric,current.metric);
+assert.equal(prior.unit,current.unit);
+assert.equal(Math.round(Math.abs(pTime-cTime)/1000),24*3600-1065,"publish times vary by 17m45s across consecutive dates");
+const day28=actualMarkdownTable("2026-10-28");
+for(const row of day28.rows){
+ const p=prior.industries.find(x=>x.name===row[0]);
+ const c=current.industries.find(x=>x.name===row[0]);
+ assert(p&&c,"sector must exist on both days");
+ assert.equal(Number(row[1]),p.net_yi);
+ assert.equal(Number(row[2]),c.net_yi);
+}
 const css=fs.readFileSync("assets/report-template.css","utf8");
 for(const pattern of [
  /\.frame-funds\{[^}]*background:var\(--funds-bg\)/,
@@ -80,5 +97,6 @@ for(const pattern of [
  /\.frame-funds-bar\.positive\{left:50%/,
  /\.frame-funds-bar\.negative\{right:50%/,
  /\.frame-funds-row\{[^}]*grid-template-columns/,
+ /\.frame-funds-evidence\{[^}]*display:flex/,
 ])assert(pattern.test(css),"Missing shared-centered chart style: "+pattern);
 console.log("PASS: 28/26/23 original reports render full 10-sector true-scale centered-zero cards, precise labels and amounts.");
