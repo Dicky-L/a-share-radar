@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-26",
+  "source_id": "stcn_databao_sw1_mainflow",
+  "source_name": "证券时报·数据宝",
+  "industry_classification": "申万一级",
+  "metric": "估算主力资金净流入额",
+  "unit": "亿元",
+  "published_at": "2026-10-26T16:50:00+08:00",
+  "source_url": "https://finance.eastmoney.com/a/202610263908055684.html",
+  "full_31_industries": false,
+  "notes": "主力净额来自数据宝分单估算；不等于行业总成交额或实际跨行业资金转移。相同日期行业值唯一且可追溯。",
+  "industries": [
+    {
+      "name": "电子",
+      "net_yi": -122.38,
+      "price_change_pct": -3.79
+    },
+    {
+      "name": "通信",
+      "net_yi": -41.73,
+      "price_change_pct": -2.95
+    },
+    {
+      "name": "计算机",
+      "net_yi": -3.38,
+      "price_change_pct": -0.03
+    },
+    {
+      "name": "传媒",
+      "net_yi": 4.58,
+      "price_change_pct": 0.93
+    },
+    {
+      "name": "汽车",
+      "net_yi": 10.8,
+      "price_change_pct": 0.12
+    },
+    {
+      "name": "机械设备",
+      "net_yi": 6.42,
+      "price_change_pct": -1.66
+    },
+    {
+      "name": "国防军工",
+      "net_yi": -7.98,
+      "price_change_pct": -0.62
+    },
+    {
+      "name": "电力设备",
+      "net_yi": -19.83,
+      "price_change_pct": -0.79
+    },
+    {
+      "name": "银行",
+      "net_yi": -0.68,
+      "price_change_pct": 1.76
+    },
+    {
+      "name": "公用事业",
+      "net_yi": -10.19,
+      "price_change_pct": 0.68
+    }
+  ]
+}
