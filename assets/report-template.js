@@ -35,61 +35,95 @@ function takeSegments(content){
  }
  return {lead,segments};
 }
+/* Accept either "10月27日主力净额" or "27日净额".
+   Other columns such as 净额变化 / 净流强度 never count as a dated money value. */
+function datedNetColumns(table){
+ const heads=[...table.querySelectorAll("thead th")].map(n=>n.textContent.trim());
+ const indices=heads.map((name,i)=>(
+   i>0 && /净额/.test(name) && !/(变化|差额|强度|占比|环比|买入|卖出)/.test(name) &&
+   (/(\d{1,2}月)?\d{1,2}日/.test(name)||/前日|当日|上日|昨日|今日/.test(name))?i:-1
+ )).filter(x=>x>=0);
+ return {heads,indices:indices.slice(0,2)};
+}
 function sectorTable(slot){
- const candidates=[...slot.querySelectorAll("table")];
- return candidates.find(table=>{
-   const th=[...table.querySelectorAll("thead th")].map(n=>norm(n.textContent));
-   return th.length>=4 && th[0].includes("行业") &&
-     th.some(v=>v.includes("主力净额")) && th.filter(v=>v.includes("主力净额")).length>=2;
+ return [...slot.querySelectorAll("table")].find(table=>{
+   const {heads,indices}=datedNetColumns(table);
+   return heads.length>=3 && /行业/.test(heads[0]) && indices.length===2;
  });
 }
 function numeric(str){
  const clean=String(str||"").replace(/[,\s*]/g,"").replace(/亿元|亿|元/g,"").trim();
  return /^[+\-−]?\d+(?:\.\d+)?$/.test(clean)?Number(clean.replace("−","-")):null;
 }
-function isNum(n){return Number.isFinite(n)}
-function industryGraphic(slot){
+function formatFundDate(header,reportDate){
+ const m=header.match(/(?:(\d{1,2})月)?(\d{1,2})日/);
+ if(!m)return header;
+ let month=m[1]?Number(m[1]):Number((reportDate||"").slice(5,7));
+ const day=Number(m[2]),reportDay=Number((reportDate||"").slice(8,10));
+ // Explicit report timestamps make prev-month boundaries unambiguous.
+ if(!m[1] && Number.isFinite(reportDay) && day>reportDay)month=month===1?12:month-1;
+ const label=month?month+"月"+day+"日":day+"日";
+ return label+"主力净额";
+}
+function collapseLegacyEmojiChart(boxed){
+ // Keep the source's original emoji illustration accessible, but do not
+ // display two competing graphs. Move nodes rather than delete original text.
+ const desc=boxed.nextElementSibling;
+ const list=desc?.nextElementSibling;
+ if(!desc||desc.tagName!=="P"||!/^红绿同刻度方向图/.test(desc.textContent.trim()))return;
+ if(!list||list.tagName!=="UL"||!/[🟥🟩]/u.test(list.textContent))return;
+ const details=el("details","frame-legacy-emoji");
+ const summary=el("summary","","查看原报告字符图（已由精确刻度图替代）");
+ desc.before(details);details.append(summary,desc,list);
+}
+function industryGraphic(slot,reportDate){
  const table=sectorTable(slot);
  if(!table)return;
- const header=[...table.querySelectorAll("thead th")].map(x=>x.textContent.trim());
- const indices=header.map((v,i)=>(v.includes("主力净额")?i:-1)).filter(i=>i>=0);
- if(indices.length<2)return;
+ const {heads,indices}=datedNetColumns(table);
  const trs=[...table.querySelectorAll("tbody tr")],valid=[];
  for(const tr of trs){
-   const td=[...tr.children];
-   if(td.length<=indices[1])continue;
-   const left=numeric(td[indices[0]].textContent),right=numeric(td[indices[1]].textContent);
-   if(isNum(left)&&isNum(right))valid.push({name:td[0].textContent.trim(),left,right});
+   const cells=[...tr.children];
+   if(cells.length<=indices[1])continue;
+   const left=numeric(cells[indices[0]].textContent),right=numeric(cells[indices[1]].textContent);
+   if(Number.isFinite(left)&&Number.isFinite(right)){
+     valid.push({name:cells[0].textContent.trim(),left,right});
+   }
  }
  if(valid.length<2)return;
  const max=Math.max(1,...valid.flatMap(x=>[Math.abs(x.left),Math.abs(x.right)]));
  const graph=el("section","frame-funds");
+ graph.dataset.source="dated-net-table";
+ graph.dataset.scaleMaximum=max.toFixed(2);
+ graph.dataset.rowCount=String(valid.length);
+ graph.setAttribute("aria-label","申万一级行业双日主力资金净额对照图");
  const head=el("div","frame-funds-heading");
  head.append(el("strong","","行业资金双日方向 · 同金额刻度"),
    el("small","","单位：亿元 · 红=估算净流入 / 绿=估算净流出"));
  graph.append(head);
- const leftLabel=header[indices[0]].replace("（亿元）","").replace("亿元",""),rightLabel=header[indices[1]].replace("（亿元）","").replace("亿元","");
+ const labels=indices.map(i=>formatFundDate(heads[i],reportDate));
  for(const row of valid.slice(0,10)){
-   const x=el("div","frame-funds-row");
-   x.append(el("strong","frame-funds-name",row.name));
+   const group=el("div","frame-funds-row");
+   group.append(el("strong","frame-funds-name",row.name));
    const pairs=el("div","frame-funds-pairs");
-   for(const [label,value] of [[leftLabel,row.left],[rightLabel,row.right]]){
+   for(const [label,value] of [[labels[0],row.left],[labels[1],row.right]]){
      const line=el("div","frame-funds-pair");
      line.append(el("span","frame-funds-day",label));
      const track=el("div","frame-funds-track");
      track.setAttribute("role","img");
-     track.setAttribute("aria-label",row.name+" "+label+" 主力净额 "+(value>0?"+":"")+value.toFixed(2)+"亿元");
+     track.setAttribute("aria-label",row.name+" "+label+" "+(value>0?"+":"")+value.toFixed(2)+"亿元");
      const bar=el("span","frame-funds-bar "+(value>=0?"positive":"negative"));
-     bar.style.width=(Math.abs(value)/max*50).toFixed(2)+"%";
+     bar.style.width=(Math.abs(value)/max*50).toFixed(3)+"%";
+     bar.dataset.amount=String(value);
      track.append(bar);
      line.append(track,el("span","frame-funds-amount "+(value>=0?"up":"down"),(value>0?"+":"")+value.toFixed(2)));
      pairs.append(line);
    }
-   x.append(pairs);graph.append(x);
+   group.append(pairs);graph.append(group);
  }
  graph.append(el("p","frame-funds-note","同图统一绝对金额刻度，零线位于中央；仅比较主力净额方向，不表示成交总额或行业之间的资金转移。精确值与数据来源以原报告表格为准。"));
  const boxed=table.closest(".tablebox")||table;
  boxed.before(graph);
+ collapseLegacyEmojiChart(boxed);
 }
 function render(data){
  const content=$("content"),host=$("template-overview");
@@ -166,7 +200,7 @@ function render(data){
    const temp=el("div");
    for(const node of following)temp.append(node);
    // Render graphic at the top of industry section, keep original comparison table intact.
-   industryGraphic(temp);
+   industryGraphic(temp,data.date);
    industry.after(...[...temp.children]);
  }
 }
