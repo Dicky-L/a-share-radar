@@ -1,0 +1,83 @@
+/* Regression test against REAL dated reports; no simulated market amounts. */
+"use strict";
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const vm=require("node:vm");
+class Elem{
+ constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.className="";this.style={};this.dataset={};this.attributes={};this.textContent="";}
+ append(...children){this.children.push(...children);return this}
+ setAttribute(name,value){this.attributes[name]=value}
+}
+const window={};
+const document={createElement(tag){return new Elem(tag)}};
+vm.runInNewContext(fs.readFileSync("assets/report-template.js","utf8"),{window,document});
+const {sectorColumns,industryGraphic,formatFundDate}=window.RadarReportTemplate;
+assert.equal(window.RadarReportTemplate.version,"2026.10-v1.2");
+function actualMarkdownTable(day){
+ const src=fs.readFileSync("reports/"+day+".md","utf8");
+ const section=src.match(/^## 三、10个申万一级行业双日对照[^\n]*\n([\s\S]*?)(?=^## 四、|\s*$)/m);
+ assert(section,"missing sector chapter "+day);
+ const lines=section[1].split("\n");
+ const at=lines.findIndex(x=>x.startsWith("|")&&x.includes("申万一级行业")&&x.includes("净额"));
+ assert(at>=0,"missing sector table "+day);
+ const split=x=>x.trim().replace(/^\||\|$/g,"").split("|").map(c=>c.trim().replace(/\*\*/g,""));
+ const headings=split(lines[at]);
+ const rows=[];
+ for(let i=at+2;i<lines.length&&lines[i].startsWith("|");i++)rows.push(split(lines[i]));
+ return {headings,rows};
+}
+function check(day,labels){
+ const {headings,rows}=actualMarkdownTable(day);
+ const table={
+  querySelectorAll(sel){
+   if(sel==="thead th")return headings.map(textContent=>({textContent}));
+   if(sel==="tbody tr")return rows.map(cells=>({children:cells.map(textContent=>({textContent}))}));
+   throw new Error("unsupported query: "+sel);
+  },
+  closest(){return wrapper;}
+ };
+ let chart=null;
+ const wrapper={nextElementSibling:null,before(element){chart=element}};
+ const slot={querySelectorAll(sel){assert.equal(sel,"table");return [table]}};
+ const columns=sectorColumns(table);
+ assert.equal(columns.indices.length,2,day+": expected exactly two dated net columns");
+ assert.deepEqual([...columns.indices],[1,2],day+": must not confuse with delta and intensity");
+ assert.deepEqual(columns.indices.map(i=>formatFundDate(headings[i],day)),labels);
+ industryGraphic(slot,day);
+ assert(chart,day+": no chart generated");
+ assert.equal(chart.dataset.rowCount,"10",day+": should chart all 10 verified industries");
+ const displayed=chart.children.filter(x=>x.className==="frame-funds-row");
+ assert.equal(displayed.length,10);
+ const nums=rows.flatMap(x=>[Number(x[1]),Number(x[2])]);
+ const max=Math.max(...nums.map(Math.abs));
+ assert.equal(Number(chart.dataset.scaleMaximum),max);
+ for(let i=0;i<10;i++){
+  const group=displayed[i];
+  assert.equal(group.children[0].textContent,rows[i][0]);
+  const pairs=group.children[1].children;
+  assert.equal(pairs.length,2);
+  for(let j=0;j<2;j++){
+   const [label,track,amount]=pairs[j].children;
+   assert.equal(label.textContent,labels[j]);
+   const value=Number(rows[i][j+1]);
+   assert.equal(amount.textContent,(value>0?"+":"")+value.toFixed(2));
+   const bar=track.children[0];
+   assert(bar.className.includes(value<0?"negative":"positive"));
+   assert(Math.abs(Number(bar.style.width.slice(0,-1))-Math.abs(value)/max*50)<=0.001,
+      "all bars must share max across all 20 values; "+rows[i][0]);
+  }
+ }
+ return {chart,rows};
+}
+check("2026-10-28",["10月27日主力净额","10月28日主力净额"]);
+check("2026-10-26",["10月23日主力净额","10月26日主力净额"]);
+check("2026-10-23",["10月22日主力净额","10月23日主力净额"]);
+const css=fs.readFileSync("assets/report-template.css","utf8");
+for(const pattern of [
+ /\.frame-funds\{[^}]*background:var\(--funds-bg\)/,
+ /\.frame-funds-track:before\{[^}]*left:50%/,
+ /\.frame-funds-bar\.positive\{left:50%/,
+ /\.frame-funds-bar\.negative\{right:50%/,
+ /\.frame-funds-row\{[^}]*grid-template-columns/,
+])assert(pattern.test(css),"Missing shared-centered chart style: "+pattern);
+console.log("PASS: 28/26/23 original reports render full 10-sector true-scale centered-zero cards, precise labels and amounts.");
