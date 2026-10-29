@@ -17,23 +17,36 @@
 .content .frame-original-title{font-size:14px;color:#b7d5f5;font-weight:680;margin:8px 0 12px}
 .content .frame-empty{border:1px dashed #486181;background:#1b2d46;padding:14px 16px;border-radius:9px;font-size:12px;color:#bdcde2}
 .content .frame-integrated{font-size:12px;color:#accbe1;border-left:3px solid #729cc3;padding:8px 14px;background:#233b57;border-radius:7px}
-.frame-funds{margin:10px 0 16px;padding:15px;border:1px solid #3f5a79;border-radius:11px;background:#142943}
-.frame-funds-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:13px}
-.frame-funds-heading strong{font-size:13px;color:#e6f2ff}
-.frame-funds-heading small{font-size:10px;color:#afc2d9}
-.frame-funds-row{display:grid;grid-template-columns:75px minmax(0,1fr);gap:10px;align-items:center;margin:7px 0;border-bottom:1px solid #294261;padding-bottom:7px}
-.frame-funds-name{font-size:11px;color:#d3e7ff}
-.frame-funds-pairs{display:grid;gap:4px;min-width:0}
-.frame-funds-pair{display:grid;grid-template-columns:minmax(80px,130px) minmax(0,1fr) 76px;align-items:center;gap:7px}
-.frame-funds-day{font-size:10px;color:#8dabce;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.frame-funds-track{height:11px;position:relative;background:#1d3b5b;border-radius:3px}
-.frame-funds-track:before{content:"";position:absolute;width:1px;background:#90a9c3;height:100%;left:50%;z-index:1}
-.frame-funds-bar{position:absolute;height:8px;top:1.5px;border-radius:2px;max-width:50%}
-.frame-funds-bar.positive{background:#e76f77;left:50%}
-.frame-funds-bar.negative{background:#58ac93;right:50%}
-.frame-funds-amount{font-size:11px;font-weight:720;font-variant-numeric:tabular-nums;text-align:right}
-.frame-funds-amount.up{color:#ed8c93}.frame-funds-amount.down{color:#71c8aa}
-.frame-funds-note{font-size:10px;color:#9cb5cf;margin:10px 0 0;line-height:1.7}
+/* One shared sector chart for every day: screenshot-matched light-blue
+   card, 10 industry pairs, CENTER zero line and one global money scale. */
+.frame-funds{--funds-bg:#f3f8ff;--funds-line:#d9e3ef;--funds-text:#1f3d5b;--funds-muted:#6685a6;
+ margin:20px 0 23px;padding:24px 26px 19px;border:1px solid #d2e2f6;
+ border-radius:17px;background:var(--funds-bg);color:var(--funds-text)}
+.frame-funds-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:0 0 19px}
+.frame-funds-heading strong{font-size:16px;color:#345d7c;font-weight:750}
+.frame-funds-heading small{font-size:12px;color:var(--funds-muted)}
+.frame-funds-row{display:grid;grid-template-columns:90px minmax(0,1fr);gap:18px;align-items:center;
+ margin:0;padding:12px 0;border-bottom:1px solid var(--funds-line)}
+.frame-funds-row:last-of-type{border-bottom:0}
+.frame-funds-name{font-size:13px;line-height:1.5;font-weight:800;color:#20354b}
+.frame-funds-pairs{display:grid;gap:11px;min-width:0}
+.frame-funds-pair{display:grid;grid-template-columns:152px minmax(0,1fr) 94px;align-items:center;gap:15px}
+.frame-funds-day{font-size:12px;color:#6b8aac;white-space:nowrap}
+.frame-funds-track{position:relative;width:100%;height:14px;background:#dce7f8;border-radius:4px;overflow:hidden}
+.frame-funds-track:before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;
+ background:#7698b8;z-index:2}
+.frame-funds-bar{position:absolute;height:calc(100% - 2px);top:1px;border-radius:3px;max-width:50%;min-width:0}
+.frame-funds-bar[data-amount]:not([data-amount="0"]){min-width:1px}
+.frame-funds-bar.positive{left:50%;background:#e86a75}
+.frame-funds-bar.negative{right:50%;background:#59ae98}
+.frame-funds-amount{font-size:13px;font-weight:750;text-align:right;font-variant-numeric:tabular-nums}
+.frame-funds-amount.up{color:#ca4853}
+.frame-funds-amount.down{color:#168771}
+.frame-funds-note{margin:18px 0 0;font-size:11px;color:#6988a6;line-height:1.8}
+.frame-legacy-emoji{margin:13px 0 20px;border:1px solid #d9e3ef;border-radius:9px;
+ padding:10px 14px;color:#7790a7;font-size:12px}
+.frame-legacy-emoji summary{cursor:pointer;font-weight:650}
+.frame-legacy-emoji ul{padding-left:22px;overflow-wrap:anywhere}
 :root[data-reader-theme="light"] .frame-overview{background:#edf5fd;border-color:#cbddea}
 :root[data-reader-theme="light"] .frame-overview-head h3{color:#234564}
 :root[data-reader-theme="light"] .frame-overview-head p,:root[data-reader-theme="light"] .frame-overview-help{color:#5c7997}
@@ -45,13 +58,6 @@
 :root[data-reader-theme="light"] .content .frame-original-title{color:#47779c}
 :root[data-reader-theme="light"] .content .frame-empty{background:#f8f9fc;border-color:#cbd6e4;color:#7086a0}
 :root[data-reader-theme="light"] .content .frame-integrated{background:#ecf6fd;color:#517995}
-:root[data-reader-theme="light"] .frame-funds{background:#f5f9fe;border-color:#d4e3f2}
-:root[data-reader-theme="light"] .frame-funds-heading strong,:root[data-reader-theme="light"] .frame-funds-name{color:#355c7b}
-:root[data-reader-theme="light"] .frame-funds-heading small,:root[data-reader-theme="light"] .frame-funds-day,:root[data-reader-theme="light"] .frame-funds-note{color:#68839e}
-:root[data-reader-theme="light"] .frame-funds-row{border-color:#dfe7ef}
-:root[data-reader-theme="light"] .frame-funds-track{background:#dfeafa}
-:root[data-reader-theme="light"] .frame-funds-amount.up{color:#bf454e}
-:root[data-reader-theme="light"] .frame-funds-amount.down{color:#21836f}
-@media(max-width:850px){.frame-overview{padding:14px 16px}.frame-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.frame-funds{padding:10px}}
-@media(max-width:520px){.frame-overview-grid{grid-template-columns:1fr 1fr;gap:6px}.frame-overview-link{padding:9px 7px;grid-template-columns:18px 1fr}.frame-overview-label{font-size:11px}.frame-funds-row{grid-template-columns:65px minmax(0,1fr);gap:6px}.frame-funds-pair{grid-template-columns:40px minmax(0,1fr) 62px;gap:5px}.frame-funds-day{font-size:9px}.frame-funds-amount{font-size:10px}}
+@media(max-width:850px){.frame-overview{padding:14px 16px}.frame-overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.frame-funds{padding:16px}.frame-funds-row{grid-template-columns:74px minmax(0,1fr);gap:9px}.frame-funds-pair{grid-template-columns:112px minmax(0,1fr) 74px;gap:7px}.frame-funds-day{font-size:10px}.frame-funds-amount{font-size:11px}}
+@media(max-width:520px){.frame-overview-grid{grid-template-columns:1fr 1fr;gap:6px}.frame-overview-link{padding:9px 7px;grid-template-columns:18px 1fr}.frame-overview-label{font-size:11px}.frame-funds{padding:12px 10px}.frame-funds-heading{gap:4px}.frame-funds-row{grid-template-columns:59px minmax(0,1fr);gap:5px}.frame-funds-name{font-size:11px}.frame-funds-pair{grid-template-columns:78px minmax(0,1fr) 60px;gap:5px}.frame-funds-day{font-size:9px}.frame-funds-amount{font-size:10px}}
 @media print{.frame-overview{display:none}}
