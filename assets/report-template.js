@@ -271,5 +271,5 @@ function render(data){
    industry.after(...[...temp.children]);
  }
 }
-window.RadarReportTemplate={version:VERSION,layout:LAYOUT,render,sectorColumns:datedNetColumns,industryGraphic,formatFundDate};
+window.RadarReportTemplate={version:VERSION,layout:LAYOUT,render,sectorColumns:datedNetColumns,industryGraphic,formatFundDate,checkFundsWindow};
 })();
