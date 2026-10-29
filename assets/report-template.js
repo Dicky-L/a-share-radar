@@ -4,7 +4,7 @@
    Extend LAYOUT below to evolve the template; never fabricate old content. */
 (()=>{
 "use strict";
-const VERSION="2026.10-v1";
+const VERSION="2026.10-v1.2";
 const LAYOUT=[
  {key:"selection",label:"本期选股结论",hint:"A/B/C池、方向、是否允许等待买入",rules:["选股结论","今日结论","本期结论","总体结论"]},
  {key:"market",label:"全市场资金总览",hint:"指数、两日成交额、涨跌家数与市场广度",rules:["全市场数据","市场资金总览","市场环境与风险","市场环境","市场概况","市场资金","市场总览"]},
@@ -204,5 +204,5 @@ function render(data){
    industry.after(...[...temp.children]);
  }
 }
-window.RadarReportTemplate={version:VERSION,layout:LAYOUT,render};
+window.RadarReportTemplate={version:VERSION,layout:LAYOUT,render,sectorColumns:datedNetColumns,industryGraphic,formatFundDate};
 })();
