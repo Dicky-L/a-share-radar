@@ -43,7 +43,7 @@ function check(day,labels){
  const columns=sectorColumns(table);
  assert.equal(columns.indices.length,2,day+": expected exactly two dated net columns");
  assert.deepEqual([...columns.indices],[1,2],day+": must not confuse with delta and intensity");
- assert.deepEqual(columns.indices.map(i=>formatFundDate(headings[i],day)),labels);
+ assert.deepEqual(Array.from(columns.indices,i=>formatFundDate(headings[i],day)),labels);
  industryGraphic(slot,day);
  assert(chart,day+": no chart generated");
  assert.equal(chart.dataset.rowCount,"10",day+": should chart all 10 verified industries");
