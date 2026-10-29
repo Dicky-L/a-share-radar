@@ -38,6 +38,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify report reader JavaScript syntax
         run: node --check assets/reading.js && node --check assets/charts.js && node --check assets/pickboard.js && node --check assets/daily.js && node --check assets/pool-guide.js && node --check assets/rolling.js && node --check assets/report-template.js
+      - name: Verify Oct 28 screenshot-style ten-industry chart from real report data
+        run: node tests/test_sector_chart.cjs
       - name: Test unified stock report template and verified 10-sector comparisons
         run: python3 -m unittest discover -s tests -p 'test_report_template.py' -v
       - name: Test stock-selection archive
