@@ -28,6 +28,43 @@ def col(headers, values, patterns):
             return plain(values[i]) if i < len(values) else ""
     return ""
 
+def trade_fields(headers, values):
+    """Separate genuine stop and exit clauses in a combined source column.
+
+    When the report has one column titled '失效与卖出管理', using generic
+    substring column matching for BOTH fields silently duplicates its text.
+    For inseparable clauses, retain the exact source as one management_note.
+    """
+    clean = [plain(x) for x in headers]
+    stop_indexes = [i for i, head in enumerate(clean) if any(w in head for w in ("失效", "止损"))]
+    exit_indexes = [i for i, head in enumerate(clean) if any(w in head for w in ("卖出", "止盈", "退出"))]
+    shared = set(stop_indexes) & set(exit_indexes)
+    stop = col(clean, values, ("失效", "止损"))
+    exit_plan = col(clean, values, ("卖出", "止盈", "退出"))
+    no_chase = ""
+    note = ""
+    if shared and stop_indexes and exit_indexes and stop_indexes[0] == exit_indexes[0]:
+        raw = plain(values[stop_indexes[0]]) if len(values) > stop_indexes[0] else ""
+        stop, exit_plan = "", ""
+        leftover = []
+        for part in (p.strip() for p in re.split(r"[；;]", raw)):
+            if not part:
+                continue
+            is_stop = bool(re.search(r"止损|失效|跌破|关键支撑", part))
+            is_exit = bool(re.search(r"卖出|止盈|分批|退出|回撤保护|时间退出", part))
+            is_entry = bool(re.search(r"不追|不能沿用|不得沿用|买入|入场|新条件待核", part))
+            if is_stop and not is_exit:
+                stop = "；".join(filter(None, [stop, part]))
+            elif is_exit and not is_stop:
+                exit_plan = "；".join(filter(None, [exit_plan, part]))
+            elif is_entry and not is_stop and not is_exit:
+                no_chase = "；".join(filter(None, [no_chase, part]))
+            else:
+                leftover.append(part)
+        note = "；".join(leftover)
+    return stop or None, exit_plan or None, no_chase or None, note or None
+
+
 def extract(text: str, day: str, status: str):
     date.fromisoformat(day)
     section = ""
@@ -84,8 +121,12 @@ def extract(text: str, day: str, status: str):
             continue
         if not re.fullmatch(r"[|:\-\s]+", lines[i+1].strip()):
             continue
+        # A C-pool failed-plan table inside today's selection section is a
+        # risk review, NOT today's new prospective buy observation.
+        nearby = " ".join(lines[max(0, i-4):i])
+        c_review = bool(re.search(r"C池.{0,20}(?:失败|失效|旧方案|不自动恢复)", nearby))
         role = (
-            "historical_review" if any(x in section for x in ("验证", "复盘", "历史", "回测", "持仓"))
+            "historical_review" if c_review or any(x in section for x in ("验证", "复盘", "历史", "回测", "持仓"))
             else "watchlist"
         )
         j = i+2
@@ -102,15 +143,16 @@ def extract(text: str, day: str, status: str):
                 continue
             pool_raw = col(headers, vals, ("池别", "池", "类别", "等级"))
             pool_match = re.search(r"(?<![a-zA-Z])([ABC])\s*(?:池|级|候选)?(?![a-zA-Z])", pool_raw, re.I)
-            pool = pool_match.group(1).upper() if pool_match else None
+            pool = pool_match.group(1).upper() if pool_match else ("C" if c_review else None)
             original_reason = col(headers, vals, ("观察逻辑", "观察思路", "理由", "分析", "逻辑", "依据"))
             if not original_reason:
                 tagged_reason = col(headers, vals, ("观察类别",))
                 original_reason = re.sub(r"^[ABC]池[,，\s]*", "", tagged_reason) if tagged_reason else ""
             trigger = col(headers, vals, ("入场条件", "买入条件", "买入触发", "验证条件", "触发条件"))
             avoid = col(headers, vals, ("不追高", "禁止追高", "追高限制"))
-            invalidation = col(headers, vals, ("失效", "止损"))
-            exit_plan = col(headers, vals, ("卖出", "止盈", "退出"))
+            invalidation, exit_plan, combined_avoid, management_note = trade_fields(headers, vals)
+            if combined_avoid:
+                avoid = "；".join(filter(None, [avoid, combined_avoid]))
             risk = col(headers, vals, ("风险", "拥挤"))
             row = (day, ticker, role)
             if row not in seen:
@@ -123,6 +165,7 @@ def extract(text: str, day: str, status: str):
                     "no_chase":avoid or None,
                     "invalidation":invalidation or None,
                     "exit_plan":exit_plan or None,
+                    "management_note":management_note,
                     "risk":risk or None,
                     "report_status":status,
                     "source_file":"./reports/"+day+".md",
