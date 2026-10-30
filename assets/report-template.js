@@ -82,7 +82,11 @@ function collapseLegacyEmojiChart(boxed){
 function checkFundsWindow(doc,day){
  if(doc.date!==day||doc.source_id!=="stcn_databao_sw1_mainflow"||
     doc.industry_classification!=="申万一级"||doc.unit!=="亿元"||
-    !Array.isArray(doc.industries)||!doc.published_at||!doc.source_url)
+    !Array.isArray(doc.industries)||!doc.published_at||!doc.source_url||
+    !doc.trading_session||doc.trading_session.timezone!=="Asia/Shanghai"||
+    doc.trading_session.start!=="09:30"||doc.trading_session.morning_end!=="11:30"||
+    doc.trading_session.afternoon_start!=="13:00"||doc.trading_session.end!=="15:00"||
+    doc.trading_session.aggregation!=="full_regular_session")
    throw new Error("数据源、申万分类或单位不一致");
  const stamp=new Date(doc.published_at).getTime();
  const afterClose=new Date(day+"T15:00:00+08:00").getTime();
@@ -106,7 +110,8 @@ async function verifyFundsChart(chart,reportDate,heads,indices,rows,evidence){
      return res.json();
    }));
    const times=docs.map((doc,i)=>checkFundsWindow(doc,days[i]));
-   if(docs[0].source_id!==docs[1].source_id||docs[0].metric!==docs[1].metric)
+   if(docs[0].source_id!==docs[1].source_id||docs[0].metric!==docs[1].metric||
+      JSON.stringify(docs[0].trading_session)!==JSON.stringify(docs[1].trading_session))
      throw new Error("数据商或主力资金定义不一致");
    const by=docs.map(doc=>new Map(doc.industries.map(r=>[r.name,r.net_yi])));
    for(const row of rows){
@@ -120,6 +125,9 @@ async function verifyFundsChart(chart,reportDate,heads,indices,rows,evidence){
    evidence.append(el("strong","","已核验：相同统计窗口（全天交易至15:00收盘），同一数据商与申万一级行业"));
    const info=el("span","","发布时点："+label(days[0])+" "+hm(times[0])+" / "+label(days[1])+" "+hm(times[1])+"；发布时间不同，但均为盘后全日汇总。");
    evidence.append(info);
+   if(times[0]%86400000!==times[1]%86400000){
+     evidence.append(el("span","","特殊情况：两期公开发布时间不相同，但统计均覆盖各自09:30—11:30及13:00—15:00的完整交易时段。"));
+   }
    docs.forEach((doc,i)=>{
      const a=el("a","",label(days[i])+"原始资金日报");
      a.href=doc.source_url;a.target="_blank";a.rel="noopener noreferrer";
