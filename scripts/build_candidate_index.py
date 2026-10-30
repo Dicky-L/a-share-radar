@@ -123,8 +123,12 @@ def extract(text: str, day: str, status: str):
             continue
         # A C-pool failed-plan table inside today's selection section is a
         # risk review, NOT today's new prospective buy observation.
-        nearby = " ".join(lines[max(0, i-4):i])
-        c_review = bool(re.search(r"C池.{0,20}(?:失败|失效|旧方案|不自动恢复)", nearby))
+        # Match an actual C-pool review banner, NOT a sentence about
+        # "A/B/C池别、买入触发价、失效价" in earlier report metadata.
+        c_review = any(
+            re.search(r"^\s*(?:\*\*|#{2,4}\s+)C池(?:与|[：:\s]).*(?:失败|失效|旧方案|不自动恢复)", preceding)
+            for preceding in lines[max(0, i-3):i]
+        )
         role = (
             "historical_review" if c_review or any(x in section for x in ("验证", "复盘", "历史", "回测", "持仓"))
             else "watchlist"
