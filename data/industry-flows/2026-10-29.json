@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-29",
+  "source_id": "stcn_databao_sw1_mainflow",
+  "source_name": "证券时报·数据宝",
+  "industry_classification": "申万一级",
+  "metric": "估算主力资金净流入额",
+  "unit": "亿元",
+  "published_at": "2026-10-29T16:40:00+08:00",
+  "retrieved_at": "2026-10-30T17:57:45+08:00",
+  "source_url": "https://finance.eastmoney.com/a/202610293914216522.html",
+  "full_31_industries": true,
+  "notes": "2026-10-30检索补建29日16:40已公开的原始同源数据台账；仅作以后比较及历史评估，不回写29日18:00原始选股结论；不得混用29日18:12另一统计版本。未含行业成交额、买卖双边额。",
+  "industries": [
+    {
+      "name": "国防军工",
+      "net_yi": 9.77,
+      "price_change_pct": -0.06
+    },
+    {
+      "name": "食品饮料",
+      "net_yi": 5.59,
+      "price_change_pct": 1.17
+    },
+    {
+      "name": "石油石化",
+      "net_yi": 4.01,
+      "price_change_pct": 0.95
+    },
+    {
+      "name": "交通运输",
+      "net_yi": 3.13,
+      "price_change_pct": 0.22
+    },
+    {
+      "name": "轻工制造",
+      "net_yi": -0.09,
+      "price_change_pct": -1
+    },
+    {
+      "name": "美容护理",
+      "net_yi": -0.67,
+      "price_change_pct": -3.39
+    },
+    {
+      "name": "综合",
+      "net_yi": -0.8,
+      "price_change_pct": -3.07
+    },
+    {
+      "name": "纺织服饰",
+      "net_yi": -0.99,
+      "price_change_pct": -1.39
+    },
+    {
+      "name": "银行",
+      "net_yi": -1.36,
+      "price_change_pct": 1.97
+    },
+    {
+      "name": "煤炭",
+      "net_yi": -1.41,
+      "price_change_pct": 2.21
+    },
+    {
+      "name": "社会服务",
+      "net_yi": -1.46,
+      "price_change_pct": -1.68
+    },
+    {
+      "name": "钢铁",
+      "net_yi": -1.47,
+      "price_change_pct": -1.42
+    },
+    {
+      "name": "环保",
+      "net_yi": -2.23,
+      "price_change_pct": -1.73
+    },
+    {
+      "name": "建筑装饰",
+      "net_yi": -2.35,
+      "price_change_pct": -1.22
+    },
+    {
+      "name": "家用电器",
+      "net_yi": -3.46,
+      "price_change_pct": 0.02
+    },
+    {
+      "name": "商贸零售",
+      "net_yi": -3.77,
+      "price_change_pct": -1.69
+    },
+    {
+      "name": "农林牧渔",
+      "net_yi": -4.29,
+      "price_change_pct": -0.1
+    },
+    {
+      "name": "公用事业",
+      "net_yi": -4.57,
+      "price_change_pct": 0.62
+    },
+    {
+      "name": "房地产",
+      "net_yi": -7.32,
+      "price_change_pct": -2.48
+    },
+    {
+      "name": "非银金融",
+      "net_yi": -9.11,
+      "price_change_pct": -0.56
+    },
+    {
+      "name": "建筑材料",
+      "net_yi": -10.83,
+      "price_change_pct": -3.26
+    },
+    {
+      "name": "医药生物",
+      "net_yi": -12.57,
+      "price_change_pct": -0.89
+    },
+    {
+      "name": "汽车",
+      "net_yi": -16.53,
+      "price_change_pct": -2.44
+    },
+    {
+      "name": "传媒",
+      "net_yi": -19.44,
+      "price_change_pct": -1.69
+    },
+    {
+      "name": "基础化工",
+      "net_yi": -23.99,
+      "price_change_pct": -2.25
+    },
+    {
+      "name": "有色金属",
+      "net_yi": -25.03,
+      "price_change_pct": -1.9
+    },
+    {
+      "name": "计算机",
+      "net_yi": -28.96,
+      "price_change_pct": -2.98
+    },
+    {
+      "name": "电力设备",
+      "net_yi": -29.65,
+      "price_change_pct": -1.85
+    },
+    {
+      "name": "机械设备",
+      "net_yi": -30.8,
+      "price_change_pct": -3.23
+    },
+    {
+      "name": "通信",
+      "net_yi": -104.56,
+      "price_change_pct": -7.56
+    },
+    {
+      "name": "电子",
+      "net_yi": -276.95,
+      "price_change_pct": -5.47
+    }
+  ],
+  "trading_session": {
+    "timezone": "Asia/Shanghai",
+    "start": "09:30",
+    "morning_end": "11:30",
+    "afternoon_start": "13:00",
+    "end": "15:00",
+    "aggregation": "full_regular_session"
+  }
+}
