@@ -81,6 +81,13 @@ assert.equal(prior.source_id,current.source_id,"provider must match");
 assert.equal(prior.industry_classification,current.industry_classification);
 assert.equal(prior.metric,current.metric);
 assert.equal(prior.unit,current.unit);
+assert.deepEqual(prior.trading_session,current.trading_session,"industry trading windows must be exactly identical");
+assert.equal(prior.trading_session.aggregation,"full_regular_session");
+assert.equal(prior.trading_session.start,"09:30");
+assert.equal(prior.trading_session.end,"15:00");
+const corrupt=structuredClone(prior);
+corrupt.trading_session.end="14:30";
+assert.throws(()=>checkWindow(corrupt,"2026-10-27"),/数据源、申万分类或单位不一致/);
 assert.equal(Math.round(Math.abs(pTime-cTime)/1000),24*3600-1065,"publish times vary by 17m45s across consecutive dates");
 const day28=actualMarkdownTable("2026-10-28");
 for(const row of day28.rows){
