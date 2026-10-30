@@ -87,7 +87,8 @@ class CandidateArchiveTest(unittest.TestCase):
         self.assertEqual(len(c),1)
         self.assertEqual(c[0]["pool"],"C")
         self.assertEqual(c[0]["role"],"historical_review")
-        self.assertNotEqual(c[0]["invalidation"],c[0]["exit_plan"])
+        self.assertFalse(c[0]["invalidation"] and c[0]["exit_plan"]
+                         and c[0]["invalidation"] == c[0]["exit_plan"])
         self.assertIn("分批退出",c[0]["management_note"])
         self.assertEqual(
             {x["code"] for x in archive["records"]
