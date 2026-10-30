@@ -47,6 +47,54 @@ class CandidateArchiveTest(unittest.TestCase):
         self.assertIsNone(r[0]["invalidation"])
         self.assertIsNone(r[0]["exit_plan"])
 
+    def test_combined_stop_and_exit_are_not_duplicated(self):
+        sample = """## 五、本期选股观察与卖出计划
+| 池别/状态 | 公司 | 代码 | 今日证据与不足 | 下一日入场验证/不追高 | 失效位及卖出管理 |
+|---|---|---|---|---|---|
+| B | 测试银行 | 601166 | 缩量没有突破 | 站稳19.12 | 18.50元附近为原失效位；若真实成交按成本设计5%/8%分批退出 |
+"""
+        rows=extract(sample,"2026-10-28","original")
+        self.assertEqual(len(rows),1)
+        self.assertIn("18.50",rows[0]["invalidation"])
+        self.assertIn("分批退出",rows[0]["exit_plan"])
+        self.assertNotEqual(rows[0]["invalidation"],rows[0]["exit_plan"])
+        self.assertIsNone(rows[0]["management_note"])
+
+    def test_combined_inseparable_risk_kept_once_in_c_review(self):
+        sample = """## 五、本期选股观察与卖出计划
+
+**C池与失败方案逐股记录（不自动恢复B池）：**
+
+| 股票（简介/行情） | 代码 | 当期状态与理由 | 新入场限制、失效与卖出纪律 |
+|---|---|---|---|
+| 沪电股份（电子/PCB） | 002463 | 仍低于21日原失效113.90；旧买点已失效 | 不能沿用118.50旧突破价自动买；新条件待核；若实际成交才设成本止损及分批退出 |
+"""
+        rows=extract(sample,"2026-10-28","original")
+        self.assertEqual(len(rows),1)
+        rec=rows[0]
+        self.assertEqual(rec["pool"],"C")
+        self.assertEqual(rec["role"],"historical_review")
+        self.assertIsNone(rec["invalidation"])
+        self.assertIsNone(rec["exit_plan"])
+        self.assertIn("118.50",rec["no_chase"])
+        self.assertEqual(rec["management_note"],"若实际成交才设成本止损及分批退出")
+        self.assertIn("113.90",rec["reason"])
+
+    def test_actual_oct28_c_pool_has_no_repeated_misclassified_trade_field(self):
+        archive = build(Path(__file__).resolve().parents[1] / "reports")
+        c=[x for x in archive["records"] if x["date"]=="2026-10-28"
+           and x["code"]=="002463"]
+        self.assertEqual(len(c),1)
+        self.assertEqual(c[0]["pool"],"C")
+        self.assertEqual(c[0]["role"],"historical_review")
+        self.assertNotEqual(c[0]["invalidation"],c[0]["exit_plan"])
+        self.assertIn("分批退出",c[0]["management_note"])
+        self.assertEqual(
+            {x["code"] for x in archive["records"]
+             if x["date"]=="2026-10-28" and x["role"]=="watchlist"},
+            {"601166","000625"}
+        )
+
     def test_no_match_returns_empty(self):
         self.assertEqual(extract("## 候选\\n没有符合条件股票。","2026-10-20","original"), [])
 
