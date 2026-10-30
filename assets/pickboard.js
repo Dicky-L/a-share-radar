@@ -20,9 +20,9 @@ function button(text,click){
 function notice(text){
  return make("div","pick-empty",text);
 }
-function field(label,text,mark){
+function field(label,text,mark,fallback="原报告未单独记录；不能据此确定买卖条件"){
  const box=make("div","pick-field"+(text?"":" missing")+(mark?" pick-entry-check":""));
- box.append(make("label","",label),make("p","",text||"原报告未单独记录；不能据此确定买卖条件"));
+ box.append(make("label","",label),make("p","",text||fallback));
  return box;
 }
 function stockTimeline(card,code){
@@ -53,8 +53,15 @@ function stockCard(rec){
  card.append(head);
  card.append(field("① 入选逻辑 / 观察依据",rec.reason,true));
  card.append(field("② 下一交易日买入验证",rec.entry_trigger));
- card.append(field("③ 失效与止损条件",rec.invalidation));
- card.append(field("④ 卖出与利润保护",rec.exit_plan));
+ // Legacy archived files may have mistakenly copied a combined stop/exit
+ // source column into both fields. Display exact wording only once.
+ const duplicate=Boolean(rec.invalidation&&rec.exit_plan&&rec.invalidation.trim()===rec.exit_plan.trim());
+ card.append(field("③ 失效与止损条件",duplicate?null:rec.invalidation,false,
+   "本期未单独记录新的结构失效或止损条件；历史失效信息不代表可沿用的止损指令"));
+ card.append(field("④ 卖出与利润保护",duplicate?null:rec.exit_plan,false,
+   "本期未独立给出可执行的止盈或分批退出目标；需以真实成交价另行核定"));
+ const combined=rec.management_note||(duplicate?rec.invalidation:null);
+ if(combined)card.append(field("原文综合风控与退出说明（不拆作两条信号）",combined));
  if(rec.supplement_source){
    card.append(make("p","pick-provenance","以上补充条件源自先前推送记录的可检索摘要，不是已保存的逐字完整原报告；请按当期日期理解，非当前买卖建议。"));
  }
@@ -126,7 +133,7 @@ function showCurrent(){
    for(const [groupRows,title,description] of buckets){const el=group(groupRows,title,description);if(el)body.append(el)}
  }else body.append(notice("本篇归档尚无可直接解析的当期观察候选表。可能是报告使用段落、当前存档只是摘要，或当期没有新候选。请以本篇原始文字为准，不能把“未解析到”理解成“当日没有推荐”。"));
  if(review.length){
-   const g=group(review,"历史验证与复盘记录","不是新一轮买入推荐");
+   const g=group(review,"C池风险、历史验证与复盘","旧方案失效只记录风险，不是本次新增买入推荐");
    if(g)body.append(g);
  }
  const divider=make("div","pick-search");
