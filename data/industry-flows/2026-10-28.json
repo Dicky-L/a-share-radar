@@ -166,5 +166,13 @@
       "net_yi": -15.8,
       "price_change_pct": 0.73
     }
-  ]
+  ],
+  "trading_session": {
+    "timezone": "Asia/Shanghai",
+    "start": "09:30",
+    "morning_end": "11:30",
+    "afternoon_start": "13:00",
+    "end": "15:00",
+    "aggregation": "full_regular_session"
+  }
 }
