@@ -16,7 +16,7 @@ STORE=ROOT/"data"/"industry-flows"
 REPORTS=ROOT/"reports"
 FAMILY="stcn_databao_sw1_mainflow"
 HEADINGS=re.compile(r"10月(\d{1,2})日主力净额")
-REPORT_DATES=("2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30")
+REPORT_DATES=("2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30","2026-10-31")
 
 
 def decimal(raw):
@@ -86,7 +86,14 @@ def verify(reports=REPORTS,store=STORE):
     for day in REPORT_DATES:
         report=(Path(reports)/(day+".md")).read_text(encoding="utf-8")
         days,rows,section=table_in_report(report)
-        if days[1]!=day:raise ValueError("incorrect right date in "+day)
+        if days[1]!=day:
+            published=date.fromisoformat(day)
+            latest_trade=date.fromisoformat(days[1])
+            # Weekend reports use Friday's latest close, never a synthetic weekend session.
+            valid_weekend=(published.weekday()>=5 and latest_trade.weekday()==4
+                           and 1 <= (published-latest_trade).days <= 2)
+            if not valid_weekend:
+                raise ValueError("incorrect right trade date in "+day+": "+days[1])
         if "数据宝" not in section:raise ValueError("provider not disclosed: "+day)
         for name,left,right,change in rows:
             for d,value in zip(days,(left,right)):
