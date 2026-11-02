@@ -15,8 +15,8 @@ ROOT=Path(__file__).resolve().parents[1]
 STORE=ROOT/"data"/"industry-flows"
 REPORTS=ROOT/"reports"
 FAMILY="stcn_databao_sw1_mainflow"
-HEADINGS=re.compile(r"10月(\d{1,2})日主力净额")
-REPORT_DATES=("2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30","2026-10-31","2026-11-01")
+HEADINGS=re.compile(r"(10|11)月(\d{1,2})日主力净额")
+REPORT_DATES=("2026-10-26","2026-10-27","2026-10-28","2026-10-29","2026-10-30","2026-10-31","2026-11-01","2026-11-02")
 
 
 def decimal(raw):
@@ -64,7 +64,7 @@ def table_in_report(report):
     for col in header[1:3]:
         found=HEADINGS.search(col)
         if not found:raise ValueError("industry table heading has no exact trade dates: "+col)
-        days.append("2026-10-"+found.group(1).zfill(2))
+        days.append("2026-"+found.group(1)+"-"+found.group(2).zfill(2))
     if len(set(days))!=2 or days[0]>=days[1]:
         raise ValueError("industry table trade days out of order")
     if i+1>=len(lines) or not re.match(r"^\|\s*-",lines[i+1]):
