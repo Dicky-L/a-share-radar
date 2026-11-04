@@ -1,0 +1,39 @@
+name: MYDESK static stock feed index
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'reports/*.md'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: mydesk-stock-feed
+  cancel-in-progress: false
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate deterministic static index
+        run: python scripts/build_mydesk_feed.py
+      - name: Publish if index changed
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add mydesk/feed.json
+          if git diff --staged --quiet; then exit 0; fi
+          git commit -m 'MYDESK: refresh stock feed index'
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then exit 0; fi
+            git pull --rebase origin main
+            sleep "$attempt"
+          done
+          exit 1
