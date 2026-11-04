@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "source": "stock",
+  "count": 20,
+  "items": [
+    {
+      "path": "reports/2026-11-03.md",
+      "revision": "5c9fb9cf89bc97aaec810c3ff94470c74fde495c"
+    },
+    {
+      "path": "reports/2026-11-02.md",
+      "revision": "6c9d9de34f2f61fccb5bff78d3b7c18c39c87dfb"
+    },
+    {
+      "path": "reports/2026-11-01.md",
+      "revision": "bc9c155839bdd084b9e17f06e0728e65979a0ceb"
+    },
+    {
+      "path": "reports/2026-10-31.md",
+      "revision": "9290133f8836573fab6332a294f753a87e93e909"
+    },
+    {
+      "path": "reports/2026-10-30.md",
+      "revision": "02e9fbe242d3c6f18d781abeddc6a7d2a03105cf"
+    },
+    {
+      "path": "reports/2026-10-29.md",
+      "revision": "058a81919efbacc792fd0bea17ad3413efde8cfd"
+    },
+    {
+      "path": "reports/2026-10-28.md",
+      "revision": "3295be84bd064b11d00ca7662520a4c53fdcef6d"
+    },
+    {
+      "path": "reports/2026-10-27.md",
+      "revision": "03274eb19238b54ec9f2054c1a046167073b8b2d"
+    },
+    {
+      "path": "reports/2026-10-26.md",
+      "revision": "fd29e6eb2e31c264d330a49e9fa8bc4106d9492d"
+    },
+    {
+      "path": "reports/2026-10-23.md",
+      "revision": "937f8524267299b80ee0e607fcddc7b6c5bc4785"
+    },
+    {
+      "path": "reports/2026-10-22.md",
+      "revision": "4f20ef3024ca8ff28138a817f573e7b937cccacb"
+    },
+    {
+      "path": "reports/2026-10-21.md",
+      "revision": "6db8fa425463a635f7f77afb3248171da1121057"
+    },
+    {
+      "path": "reports/2026-10-20.md",
+      "revision": "472d20470ea5091c910ea9a13ad71bf7121a64fd"
+    },
+    {
+      "path": "reports/2026-10-19.md",
+      "revision": "a898f733a46d7e80255d448453f57e020f3c4766"
+    },
+    {
+      "path": "reports/2026-10-18.md",
+      "revision": "533c53a599fd9d312757696a5fde4240252f5b18"
+    },
+    {
+      "path": "reports/2026-10-17.md",
+      "revision": "b7a237c01f165b25ef2e6bb02052a80a58562256"
+    },
+    {
+      "path": "reports/2026-10-16.md",
+      "revision": "c35261f0a215978c74d39f1adbbf364b71aec0e3"
+    },
+    {
+      "path": "reports/2026-10-15.md",
+      "revision": "5910d357535dbfb61510d694d48b0488ee75b2f0"
+    },
+    {
+      "path": "reports/2026-10-14.md",
+      "revision": "429c195e0490301df5c1966224346f617fcb7cb5"
+    },
+    {
+      "path": "reports/2026-10-13.md",
+      "revision": "ae52bdb55df3f42eec7ed6e5f6e4e9851e86512c"
+    }
+  ]
+}
