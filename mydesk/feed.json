@@ -1,8 +1,12 @@
 {
   "schema_version": 1,
   "source": "stock",
-  "count": 27,
+  "count": 28,
   "items": [
+    {
+      "path": "reports/2026-11-11.md",
+      "revision": "4d81ac6f10edce3ff401eee15d9213228ece58f8"
+    },
     {
       "path": "reports/2026-11-10.md",
       "revision": "ae4ecb6fb2f0c5fdf27bcb9837afd49102a26740"
